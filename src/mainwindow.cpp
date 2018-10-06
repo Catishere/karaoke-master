@@ -89,8 +89,8 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         else i--;
     }
 
-    QString str = QString("alias song%1lyrics%2 song%3lyrics0;\n")
-                        .arg(id, QString::number(i), id);
+    QString str = QString("alias song%1lyrics%2 say \"---THE END---\";alias spamycs;\n")
+                        .arg(id, QString::number(i));
     dest.write(str.toUtf8());
 
     return true;
