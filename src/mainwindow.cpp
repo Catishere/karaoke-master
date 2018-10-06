@@ -23,11 +23,16 @@ MainWindow::MainWindow(QWidget *parent) :
         dest.setFileName(hldir + "/lyricsmaster.cfg");
     }
 
+    manager = new QNetworkAccessManager();
+    QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
+        this, SLOT(managerFinished(QNetworkReply*)));
+
     refreshSongList();
 }
 
 MainWindow::~MainWindow()
 {
+    delete manager;
     delete ui;
 }
 
@@ -128,10 +133,15 @@ void MainWindow::on_refreshButton_clicked()
 
 void MainWindow::on_startButton_clicked()
 {
+    if (ui->startButton->text() == "Start")
+        ui->startButton->setText("Stop");
+    else
+    {
+        ui->startButton->setText("Start");
+    }
+
     tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
-
-    ui->status->setText("Working");
 
     dest.write("alias spamycs say_team \"type exec lyrics_list.cfg in the console to see list with available songs\"\n");
     createTracklistFile();
@@ -165,6 +175,100 @@ void MainWindow::on_addSongButton_clicked()
     refreshSongList();
 }
 
+void MainWindow::handleLyricsReply(const QString &page)
+{
+    int start_pos = page.indexOf("<!-- Usage of azlyrics.com content") + 134;
+    int end_pos = page.indexOf("</div>", start_pos);
+
+    QString lyrics = page.mid(start_pos, end_pos - start_pos);
+    lyrics.replace("<br>", "\n");
+
+    QFile lyrics_file("lyrics/" + temp_lyrics_name + ".txt");
+
+    if (lyrics_file.open(QIODevice::WriteOnly))
+    {
+        lyrics_file.write(lyrics.toUtf8());
+        lyrics_file.close();
+    }
+    else
+        qDebug() << lyrics_file.errorString();
+
+    refreshSongList();
+
+    temp_lyrics_name = "";
+}
+
+void MainWindow::getLyricsFromURL(const QString &url)
+{
+    QNetworkRequest getLyricsReq;
+    getLyricsReq.setUrl(QUrl(url));
+    QString user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36";
+    getLyricsReq.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
+    manager->get(getLyricsReq);
+}
+
+void MainWindow::managerFinished(QNetworkReply *reply)
+{
+    if (reply->error())
+    {
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    QString answer = reply->readAll();
+
+    if (reply->url().toString().startsWith("https://www.azlyrics.com/lyrics/"))
+    {
+        handleLyricsReply(answer);
+        return;
+    }
+
+    QString regex_str = "\\d{1,2}. <a href=\"(?<link>.+?)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
+    QRegularExpression regex = QRegularExpression( regex_str
+                               , QRegularExpression::DotMatchesEverythingOption);
+
+    QStringList items;
+    QStringList links;
+
+    QRegularExpressionMatchIterator i = regex.globalMatch(answer);
+
+    while (true)
+    {
+        if (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            QString link = match.captured("link");
+            QString song = match.captured("song");
+            QString artist = match.captured("artist");
+
+            items << QString(artist + " - " + song);
+            links << QString(link);
+        }
+        else
+            break;
+    }
+
+    if (items.size() > 0)
+    {
+        bool ok;
+        QString item = QInputDialog::getItem(this, tr("Choose your song"),
+                                                   tr("Choose your song"),
+                                                   items, 0, false, &ok);
+        if (ok && !item.isEmpty())
+        {
+            QString lyrics_url = links.at(items.indexOf(item));
+
+            if (temp_lyrics_name.isEmpty())
+                temp_lyrics_name = item;
+            else
+            {
+                ui->err->setText("Downloading aborted. Another download in progress.");
+                return;
+            }
+            getLyricsFromURL(lyrics_url);
+        }
+    }
+}
+
 void MainWindow::on_deleteSongButton_clicked()
 {
     ui->err->setText("");
@@ -190,4 +294,17 @@ void MainWindow::on_deleteSongButton_clicked()
         }
         refreshSongList();
     }
+}
+
+void MainWindow::on_searchOnlineButton_clicked()
+{
+    bool ok;
+       QString text = QInputDialog::getText(this, tr("Online Search"),
+                                            tr("Type song name, artist or part of the song"), QLineEdit::Normal,
+                                            QDir::home().dirName(), &ok);
+       if (ok && !text.isEmpty())
+       {
+           request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + text));
+           manager->get(request);
+       }
 }

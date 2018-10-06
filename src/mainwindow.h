@@ -5,8 +5,13 @@
 #include <QFile>
 #include <QDir>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QRegularExpression>
 #include <QMessageBox>
 #include <QDebug>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
 
 namespace Ui {
 class MainWindow;
@@ -23,6 +28,8 @@ public:
     bool addSongToConfig(const QString &filename, const QString &id);
     bool createSongIndex(const QString &id);
     bool refreshSongList();
+    void getLyricsFromURL(const QString &url);
+    void handleLyricsReply(const QString &page);
 
 private slots:
 
@@ -36,11 +43,18 @@ private slots:
 
     void on_deleteSongButton_clicked();
 
+    void managerFinished(QNetworkReply *reply);
+
+    void on_searchOnlineButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QString hldir;
+    QString temp_lyrics_name;
     QFile tracklist;
     QFile dest;
+    QNetworkAccessManager *manager;
+    QNetworkRequest request;
 };
 
 #endif // MAINWINDOW_H
