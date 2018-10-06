@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-10-05T21:58:15
+# Project created by QtCreator 2018-10-06T16:25:16
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = karaokemaster
+TARGET = karaoke-master
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use

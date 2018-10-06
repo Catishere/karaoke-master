@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDir>
 #include <QFileDialog>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;

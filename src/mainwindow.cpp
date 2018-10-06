@@ -9,11 +9,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QFile config_file("config/hldir.conf");
 
-    config_file.open(QIODevice::ReadOnly);
-
-    hldir = config_file.readAll();
-
-    config_file.close();
+    if (config_file.open(QIODevice::ReadOnly))
+    {
+        hldir = config_file.readAll();
+        config_file.close();
+    }
 
     if (!hldir.isEmpty())
     {
@@ -148,14 +148,17 @@ void MainWindow::on_startButton_clicked()
 
 void MainWindow::on_addSongButton_clicked()
 {
+    ui->err->setText("");
     QStringList songs_list = QFileDialog::getOpenFileNames(this, tr("Open Directory"),
                                                 "/", tr("Text Files (*.txt)"));
     for (int i = 0; i < songs_list.size(); i++)
     {
-        int pos = songs_list.at(i).lastIndexOf(QChar('/'));
         QString song = songs_list.at(i);
+        int pos = song.lastIndexOf(QChar('/'));
+        QString song_newpath = "lyrics" + song.right(song.size() - pos);
 
-        QString songname = songs_list.at(i).left(pos);
+        if (!QFile::copy(song, song_newpath))
+            ui->err->setText("Permission error");
     }
     refreshSongList();
 }
