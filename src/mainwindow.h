@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDir>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QDebug>
 
 namespace Ui {
@@ -32,6 +33,8 @@ private slots:
     void on_startButton_clicked();
 
     void on_addSongButton_clicked();
+
+    void on_deleteSongButton_clicked();
 
 private:
     Ui::MainWindow *ui;

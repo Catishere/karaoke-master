@@ -149,6 +149,7 @@ void MainWindow::on_startButton_clicked()
 void MainWindow::on_addSongButton_clicked()
 {
     ui->err->setText("");
+
     QStringList songs_list = QFileDialog::getOpenFileNames(this, tr("Open Directory"),
                                                 "/", tr("Text Files (*.txt)"));
     for (int i = 0; i < songs_list.size(); i++)
@@ -157,8 +158,36 @@ void MainWindow::on_addSongButton_clicked()
         int pos = song.lastIndexOf(QChar('/'));
         QString song_newpath = "lyrics" + song.right(song.size() - pos);
 
-        if (!QFile::copy(song, song_newpath))
-            ui->err->setText("Permission error");
+        QFile song_file(song);
+        if (!song_file.copy(song_newpath))
+            ui->err->setText(song_file.errorString());
     }
     refreshSongList();
+}
+
+void MainWindow::on_deleteSongButton_clicked()
+{
+    ui->err->setText("");
+
+    QList<QListWidgetItem*> items = ui->listWidget->selectedItems();
+
+    if (items.size() == 0)
+        return;
+
+    QString question_content = QString("Are you sure you want to delete %1 song's lyrics?")
+            .arg(QString::number(items.size()));
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Delete songs", question_content,
+                                  QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        for (int i = 0; i < items.size(); i++)
+        {
+            if (!QFile::remove("lyrics/" + items.at(i)->text()))
+                ui->err->setText("Permission error!");
+        }
+        refreshSongList();
+    }
 }
