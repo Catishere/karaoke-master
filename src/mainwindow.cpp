@@ -98,7 +98,7 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
 
 bool MainWindow::createSongIndex(const QString &id)
 {
-    QString str("alias song" + id + " \"alias spamycs song" + id + "lyrics0;\n");
+    QString str("alias song" + id + " \"alias spamycs song" + id + "lyrics0;echo \"Current song: " + QString::number(3) + "\";\n");
     dest.write(str.toUtf8());
     return true;
 }
@@ -223,7 +223,7 @@ void MainWindow::managerFinished(QNetworkReply *reply)
         return;
     }
 
-    QString regex_str = "\\d{1,2}. <a href=\"(?<link>.+?)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
+    QString regex_str = "\\d{1,2}. <a href=\"(?<link>https://www.azlyrics.com/lyrics/.+?html)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
     QRegularExpression regex = QRegularExpression( regex_str
                                , QRegularExpression::DotMatchesEverythingOption);
 
@@ -264,8 +264,25 @@ void MainWindow::managerFinished(QNetworkReply *reply)
                 ui->err->setText("Downloading aborted. Another download in progress.");
                 return;
             }
+
+
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Download song?","Download song?",
+                                          QMessageBox::Yes|QMessageBox::No);
+
+            if (reply == QMessageBox::Yes)
+            {
+                downloadSongYoutube(item);
+            }
+
             getLyricsFromURL(lyrics_url);
         }
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Couldn't find these lyrics online!");
+        msgBox.exec();
     }
 }
 
@@ -299,12 +316,47 @@ void MainWindow::on_deleteSongButton_clicked()
 void MainWindow::on_searchOnlineButton_clicked()
 {
     bool ok;
-       QString text = QInputDialog::getText(this, tr("Online Search"),
-                                            tr("Type song name, artist or part of the song"), QLineEdit::Normal,
-                                            QDir::home().dirName(), &ok);
-       if (ok && !text.isEmpty())
-       {
-           request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + text));
-           manager->get(request);
-       }
+    QString text = QInputDialog::getText(this, tr("Online Search"),
+                                        tr("Type song name, artist or part of the song"), QLineEdit::Normal,
+                                        QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty())
+    {
+        request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + text + "&w=songs&p=1"));
+        manager->get(request);
+    }
+}
+
+void MainWindow::downloadSongYoutube(const QString &params)
+{
+    QProcess *process = new QProcess(this);
+    QString slam_path = "D:\\Users\\i7\\Desktop\\'Shit\\SLAM_v1.5.0\\csgo\\%(title)s.%(ext)s";
+    QString search_str;
+
+    if (params.startsWith("https://"))
+        search_str = params;
+    else
+        search_str = "\"ytsearch: " + params + "\"";
+
+    QString cmd ="youtube-dl.exe -x --audio-format wav " + search_str + " -o \""+ slam_path +"\"";
+
+    process->start(cmd);
+    while (process->waitForFinished(5000)){};
+    process->close();
+    delete process;
+
+    QMessageBox msgbox;
+    msgbox.setText("Song Downloaded!");
+    msgbox.exec();
+}
+
+void MainWindow::on_youtubeButton_clicked()
+{
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("Youtube download"),
+                                    tr("Type song name or link"), QLineEdit::Normal,
+                                    QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty())
+    {
+        downloadSongYoutube(text);
+    }
 }

@@ -8,6 +8,8 @@
 #include <QInputDialog>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include <QProcess>
+#include <QSplashScreen>
 #include <QDebug>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
@@ -30,6 +32,7 @@ public:
     bool refreshSongList();
     void getLyricsFromURL(const QString &url);
     void handleLyricsReply(const QString &page);
+    void downloadSongYoutube(const QString &params);
 
 private slots:
 
@@ -46,6 +49,8 @@ private slots:
     void managerFinished(QNetworkReply *reply);
 
     void on_searchOnlineButton_clicked();
+
+    void on_youtubeButton_clicked();
 
 private:
     Ui::MainWindow *ui;
