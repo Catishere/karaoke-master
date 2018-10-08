@@ -329,7 +329,7 @@ void MainWindow::on_searchOnlineButton_clicked()
 void MainWindow::downloadSongYoutube(const QString &params)
 {
     QProcess *process = new QProcess(this);
-    QString slam_path = "D:\\Users\\i7\\Desktop\\'Shit\\SLAM_v1.5.0\\csgo\\%(title)s.%(ext)s";
+
     QString search_str;
 
     if (params.startsWith("https://"))
@@ -337,9 +337,13 @@ void MainWindow::downloadSongYoutube(const QString &params)
     else
         search_str = "\"ytsearch: " + params + "\"";
 
-    QString cmd ="youtube-dl.exe -x --audio-format wav " + search_str + " -o \""+ slam_path +"\"";
+    QString program = "youtube-dl.exe"
+                      " -x --audio-format wav"
+                      " --exec \"ffmpeg.exe -i {} -y -ac 1 -ab 352k -ar 22050 _{}"
+                      " && rm {} && rename _{} {} && mv {} -t songs\""
+                      " " + search_str + " -o \"%(title)s.wav\"";
 
-    process->start(cmd);
+    process->start(program);
     while (process->waitForFinished(5000)){};
     process->close();
     delete process;

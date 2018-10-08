@@ -9,7 +9,6 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QProcess>
-#include <QSplashScreen>
 #include <QDebug>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
