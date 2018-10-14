@@ -11,9 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (config_file.open(QIODevice::ReadOnly))
     {
-        hldir = config_file.readAll();
+        karaokePathsConf(config_file.readAll());
         config_file.close();
-        hldir_root = hldir.left(hldir.indexOf("\\csgo"));
     }
 
     ui->tableWidget->setColumnWidth(0, 40);
@@ -22,9 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!hldir.isEmpty())
     {
         ui->startButton->setEnabled(true);
-
-        tracklist.setFileName(hldir + "\\lyrics_list.cfg");
-        dest.setFileName(hldir + "\\lyricsmaster.cfg");
     }
 
     manager = new QNetworkAccessManager();
@@ -38,6 +34,21 @@ MainWindow::~MainWindow()
 {
     delete manager;
     delete ui;
+}
+
+void MainWindow::karaokePathsConf(QString hlpath)
+{
+    if (!hlpath.isEmpty())
+    {
+
+        hldir = hlpath.replace("\\","/");
+        hldir_root = hldir.left(hldir.indexOf("/csgo")).replace("\\","/");
+
+        userdatapath = hldir.left(hldir.indexOf("/steamapps"));
+        userdatapath.append("/userdata/240818586/730/local/cfg/lyrics_trigger.cfg");
+        tracklist.setFileName(hldir + "/lyrics_list.cfg");
+        dest.setFileName(hldir + "/lyricsmaster.cfg");
+    }
 }
 
 bool MainWindow::refreshSongList()
@@ -65,7 +76,7 @@ bool MainWindow::refreshSongList()
         QTableWidgetItem *song_checkbox = new QTableWidgetItem("No");
         ui->tableWidget->setItem(i, 1, lyrics_checkbox);
 
-        if (QFileInfo::exists("songs\\" + name + ".wav"))
+        if (QFileInfo::exists("songs/" + name + ".wav"))
         {
             song_checkbox->setText("Yes");
         }
@@ -92,7 +103,7 @@ bool MainWindow::refreshSongList()
         }
         name = name.left(name.size() - 4);
 
-        if (!QFileInfo::exists("lyrics\\" + name + ".txt"))
+        if (!QFileInfo::exists("lyrics/" + name + ".txt"))
         {
             QTableWidgetItem *lyrics_checkbox = new QTableWidgetItem("No");
             QTableWidgetItem *song_checkbox = new QTableWidgetItem("Yes");
@@ -178,12 +189,7 @@ void MainWindow::on_directoryButton_clicked()
         cfg.write(dir.toUtf8());
         cfg.close();
 
-        hldir = dir;
-
-        hldir_root = hldir.left(hldir.indexOf("\\csgo"));
-
-        tracklist.setFileName(hldir + "\\lyrics_list.cfg");
-        dest.setFileName(hldir + "\\lyricsmaster.cfg");
+        karaokePathsConf(dir);
     }
 }
 
@@ -195,12 +201,11 @@ void MainWindow::on_refreshButton_clicked()
 void MainWindow::loadSong(int songid)
 {
     QString s = "songs/"+ ui->tableWidget->item(songid - 1, 2)->text() + ".wav";
-    QString d = hldir_root + "\\voice_input.wav";
+    QString d = hldir_root + "/voice_input.wav";
 
-    if (QFileInfo::exists(hldir_root + "\\voice_input.wav"))
+    if (QFileInfo::exists(d))
     {
-        QFile rm(hldir_root + "\\voice_input.wav");
-        rm.remove();
+        QFile::remove(d);
     }
 
     if (!QFile::copy(s, d))
@@ -209,9 +214,6 @@ void MainWindow::loadSong(int songid)
 
 void MainWindow::checkConfigFile()
 {
-    QString userdatapath = hldir.left(hldir.indexOf("\\steamapps"));
-    userdatapath.append("\\userdata\\240818586\\730\\local\\cfg\\lyrics_trigger.cfg");
-
     if (QFileInfo::exists(userdatapath))
     {
         QFile f(userdatapath);
@@ -236,9 +238,9 @@ void MainWindow::on_startButton_clicked()
     }
     else
     {
-        if (QFileInfo::exists(hldir_root + "\\voice_input.wav"))
+        if (QFileInfo::exists(hldir_root + "/voice_input.wav"))
         {
-            QFile rm(hldir_root + "\\voice_input.wav");
+            QFile rm(hldir_root + "/voice_input.wav");
             rm.remove();
         }
         ui->startButton->setText("Start");
@@ -253,7 +255,7 @@ void MainWindow::on_startButton_clicked()
                "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
                " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
                "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
-               " voice_loopback 0; alias karaoke_play karaoke_play_on\";\n");
+               " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n");
     createTracklistFile();
 
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
@@ -415,7 +417,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         return false;
     }
 
-    lyrics_file.setFileName("lyrics\\" + temp_lyrics_name + ".txt");
+    lyrics_file.setFileName("lyrics/" + temp_lyrics_name + ".txt");
 
     if (lyrics_file.open(QIODevice::WriteOnly))
     {
@@ -475,11 +477,11 @@ void MainWindow::on_deleteSongButton_clicked()
         for (int i = 0; i < items.size()/3; i++)
         {
             QString name = items.at(i * 3 + 2)->text();
-            if (QFileInfo::exists("lyrics\\" + name + ".txt"))
-                if (!QFile::remove("lyrics\\" + name + ".txt"))
+            if (QFileInfo::exists("lyrics/" + name + ".txt"))
+                if (!QFile::remove("lyrics/" + name + ".txt"))
                     ui->err->setText("Permission error!");
-            if (QFileInfo::exists("songs\\" + name + ".wav"))
-                QFile::remove("songs\\" + name + ".wav");
+            if (QFileInfo::exists("songs/" + name + ".wav"))
+                QFile::remove("songs/" + name + ".wav");
         }
         refreshSongList();
     }
@@ -518,7 +520,7 @@ void MainWindow::songCooked()
             if (filename.endsWith(".wav"))
             {
                 dl_file_name.replace("_", " ");
-                QFile::rename(filename, "songs\\" + dl_file_name + ".wav");
+                QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
             }
             else

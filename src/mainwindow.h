@@ -36,6 +36,7 @@ public:
     void handleLyricsSearchReply(QNetworkReply *reply);
     void downloadSongYoutube(const QString &params);
     void loadSong(int songid);
+    void karaokePathsConf(QString hlpath);
 
 private slots:
 
@@ -63,6 +64,7 @@ private:
     Ui::MainWindow *ui;
     QString hldir;
     QString hldir_root;
+    QString userdatapath;
     QString temp_lyrics_name;
     QFile tracklist;
     QFile dest;
