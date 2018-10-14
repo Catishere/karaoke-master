@@ -50,7 +50,7 @@ bool MainWindow::refreshSongList()
     QDir song_dir("songs");
     QStringList songs = song_dir.entryList(QDir::Files);
 
-    ui->tableWidget->setRowCount(lyrics.size() + songs.size());
+    ui->tableWidget->setRowCount(lyrics.size());
 
     for (int i = 0; i < lyrics.size(); i++)
     {
@@ -68,6 +68,10 @@ bool MainWindow::refreshSongList()
         if (QFileInfo::exists("songs\\" + name + ".wav"))
         {
             song_checkbox->setText("Yes");
+        }
+        else
+        {
+            ui->tableWidget->setRowCount(ui->tableWidget->rowCount() - 1);
         }
 
         ui->tableWidget->setItem(i, 0, song_checkbox);
