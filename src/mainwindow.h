@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QDebug>
+#include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -29,9 +30,12 @@ public:
     bool addSongToConfig(const QString &filename, const QString &id);
     bool createSongIndex(const QString &id);
     bool refreshSongList();
-    void getLyricsFromURL(const QString &url);
-    void handleLyricsReply(const QString &page);
+    void getPage(const QString &url);
+    bool handleLyricsReply(QNetworkReply *reply);
+    QString getGeniusSongName(const QString &page);
+    void handleLyricsSearchReply(QNetworkReply *reply);
     void downloadSongYoutube(const QString &params);
+    void loadSong(int songid);
 
 private slots:
 
@@ -51,12 +55,21 @@ private slots:
 
     void on_youtubeButton_clicked();
 
+    void checkConfigFile();
+
+    void songCooked();
+
 private:
     Ui::MainWindow *ui;
     QString hldir;
+    QString hldir_root;
     QString temp_lyrics_name;
     QFile tracklist;
     QFile dest;
+    QTimer* timer;
+    QTimer* dl_file_timer;
+    QString dl_file_name;
+    QString search_string;
     QNetworkAccessManager *manager;
     QNetworkRequest request;
 };

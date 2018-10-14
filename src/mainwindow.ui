@@ -6,40 +6,82 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>494</width>
-    <height>253</height>
+    <width>605</width>
+    <height>323</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>494</width>
-    <height>253</height>
+    <width>605</width>
+    <height>323</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>500</width>
-    <height>253</height>
+    <width>605</width>
+    <height>323</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Karaoke Master</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QListWidget" name="listWidget">
+   <widget class="QTableWidget" name="tableWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>256</width>
-      <height>192</height>
+      <width>361</width>
+      <height>251</height>
      </rect>
     </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectRows</enum>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <attribute name="horizontalHeaderHighlightSections">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="horizontalHeaderStretchLastSection">
+     <bool>true</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderDefaultSectionSize">
+     <number>20</number>
+    </attribute>
+    <attribute name="verticalHeaderMinimumSectionSize">
+     <number>20</number>
+    </attribute>
+    <column>
+     <property name="text">
+      <string>Song</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Lyrics</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Name</string>
+     </property>
+    </column>
    </widget>
    <widget class="QPushButton" name="addSongButton">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>400</x>
       <y>20</y>
       <width>91</width>
       <height>31</height>
@@ -52,7 +94,7 @@
    <widget class="QPushButton" name="refreshButton">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>400</x>
       <y>60</y>
       <width>91</width>
       <height>31</height>
@@ -65,7 +107,7 @@
    <widget class="QPushButton" name="directoryButton">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>400</x>
       <y>100</y>
       <width>91</width>
       <height>31</height>
@@ -81,10 +123,10 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>190</y>
-      <width>81</width>
-      <height>23</height>
+      <x>400</x>
+      <y>222</y>
+      <width>191</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -95,9 +137,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>210</y>
-      <width>251</width>
-      <height>20</height>
+      <y>269</y>
+      <width>571</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="palette">
@@ -144,7 +186,7 @@
    <widget class="QPushButton" name="deleteSongButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>500</x>
       <y>20</y>
       <width>91</width>
       <height>31</height>
@@ -157,7 +199,7 @@
    <widget class="QPushButton" name="searchOnlineButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>500</x>
       <y>100</y>
       <width>91</width>
       <height>31</height>
@@ -170,7 +212,7 @@
    <widget class="QPushButton" name="youtubeButton">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>500</x>
       <y>60</y>
       <width>91</width>
       <height>31</height>
@@ -186,7 +228,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>494</width>
+     <width>605</width>
      <height>21</height>
     </rect>
    </property>
