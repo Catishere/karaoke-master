@@ -61,7 +61,7 @@ bool MainWindow::refreshSongList()
     QDir song_dir("songs");
     QStringList songs = song_dir.entryList(QDir::Files);
 
-    ui->tableWidget->setRowCount(lyrics.size());
+    ui->tableWidget->setRowCount(lyrics.size() + songs.size());
 
     for (int i = 0; i < lyrics.size(); i++)
     {
@@ -79,9 +79,6 @@ bool MainWindow::refreshSongList()
         if (QFileInfo::exists("songs/" + name + ".wav"))
         {
             song_checkbox->setText("Yes");
-        }
-        else
-        {
             ui->tableWidget->setRowCount(ui->tableWidget->rowCount() - 1);
         }
 
@@ -101,6 +98,7 @@ bool MainWindow::refreshSongList()
             song_pos--;
             continue;
         }
+
         name = name.left(name.size() - 4);
 
         if (!QFileInfo::exists("lyrics/" + name + ".txt"))
@@ -112,6 +110,8 @@ bool MainWindow::refreshSongList()
             ui->tableWidget->setItem(song_pos + i, 1, lyrics_checkbox);
             ui->tableWidget->setItem(song_pos + i, 2, new QTableWidgetItem(name));
         }
+        else
+            song_pos--;
     }
 
     return true;
@@ -408,8 +408,10 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int start = page.indexOf("<!--sse-->", page.indexOf("<!--sse-->") + 1) + 26;
         int end = page.indexOf("<!--/sse-->", start) - 19;
         lyrics = page.mid(start, end - start);
-        QRegularExpression regexp("</a>|</b>|<b>|<br>|<a.+?\">");
+        QRegularExpression regexp("<a href=.+?>|<br>|</a>|\\[.+?\\]|<p>|</p>",
+                                  QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
+
         temp_lyrics_name = getGeniusSongName(page);
     }
     else
@@ -520,6 +522,7 @@ void MainWindow::songCooked()
             if (filename.endsWith(".wav"))
             {
                 dl_file_name.replace("_", " ");
+                dl_file_name.replace(QChar(0x00A0), " ");
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
             }
