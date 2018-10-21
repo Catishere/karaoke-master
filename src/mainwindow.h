@@ -15,6 +15,9 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 
+#include "configentry.h"
+#include "configcontroller.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -36,7 +39,7 @@ public:
     void handleLyricsSearchReply(QNetworkReply *reply);
     void downloadSongYoutube(const QString &params);
     void loadSong(int songid);
-    void karaokePathsConf(QString hlpath);
+    void loadDropListPaths();
 
 private slots:
 
@@ -60,11 +63,13 @@ private slots:
 
     void songCooked();
 
+    void on_dropList_activated(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     QString hldir;
     QString hldir_root;
-    QString userdatapath;
+    ConfigController configController;
     QString temp_lyrics_name;
     QFile tracklist;
     QFile dest;

@@ -7,20 +7,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QFile config_file("config/hldir.conf");
-
-    if (config_file.open(QIODevice::ReadOnly))
-    {
-        karaokePathsConf(config_file.readAll());
-        config_file.close();
-    }
-
     ui->tableWidget->setColumnWidth(0, 40);
     ui->tableWidget->setColumnWidth(1, 40);
 
-    if (!hldir.isEmpty())
+    if (!configController.getConfigEntries().isEmpty())
     {
         ui->startButton->setEnabled(true);
+        loadDropListPaths();
     }
 
     manager = new QNetworkAccessManager();
@@ -34,21 +27,6 @@ MainWindow::~MainWindow()
 {
     delete manager;
     delete ui;
-}
-
-void MainWindow::karaokePathsConf(QString hlpath)
-{
-    if (!hlpath.isEmpty())
-    {
-
-        hldir = hlpath.replace("\\","/");
-        hldir_root = hldir.left(hldir.indexOf("/csgo")).replace("\\","/");
-
-        userdatapath = hldir.left(hldir.indexOf("/steamapps"));
-        userdatapath.append("/userdata/240818586/730/local/cfg/lyrics_trigger.cfg");
-        tracklist.setFileName(hldir + "/lyrics_list.cfg");
-        dest.setFileName(hldir + "/lyricsmaster.cfg");
-    }
 }
 
 bool MainWindow::refreshSongList()
@@ -184,12 +162,14 @@ void MainWindow::on_directoryButton_clicked()
     {
         ui->startButton->setEnabled(true);
 
-        QFile cfg("config/hldir.conf");
-        cfg.open(QIODevice::WriteOnly);
-        cfg.write(dir.toUtf8());
-        cfg.close();
-
-        karaokePathsConf(dir);
+        configController.addConfig(ConfigEntry(dir));
+        loadDropListPaths();
+    }
+    else
+    {
+        QMessageBox msgbox;
+        msgbox.setText("That is not valid source configuration folder.");
+        msgbox.exec();
     }
 }
 
@@ -201,7 +181,7 @@ void MainWindow::on_refreshButton_clicked()
 void MainWindow::loadSong(int songid)
 {
     QString s = "songs/"+ ui->tableWidget->item(songid - 1, 2)->text() + ".wav";
-    QString d = hldir_root + "/voice_input.wav";
+    QString d = configController.getCurrentGamePath() + "/voice_input.wav";
 
     if (QFileInfo::exists(d))
     {
@@ -214,9 +194,10 @@ void MainWindow::loadSong(int songid)
 
 void MainWindow::checkConfigFile()
 {
-    if (QFileInfo::exists(userdatapath))
+    QString ud = configController.getUserDataPath();
+    if (QFileInfo::exists(ud))
     {
-        QFile f(userdatapath);
+        QFile f(ud);
         f.open(QIODevice::ReadOnly);
         QString cfg = f.readAll();
         int start = cfg.indexOf("bind \"=\" ") + 10;
@@ -238,9 +219,10 @@ void MainWindow::on_startButton_clicked()
     }
     else
     {
-        if (QFileInfo::exists(hldir_root + "/voice_input.wav"))
+        QString gamepath = configController.getCurrentGamePath();
+        if (QFileInfo::exists(gamepath + "/voice_input.wav"))
         {
-            QFile rm(hldir_root + "/voice_input.wav");
+            QFile rm(gamepath + "/voice_input.wav");
             rm.remove();
         }
         ui->startButton->setText("Start");
@@ -290,13 +272,19 @@ void MainWindow::on_addSongButton_clicked()
 void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
 {
     QString regex_str;
+    QString contentbox;
     bool isGenius = reply->url().toString().contains("genius.com");
 
     if (isGenius)
+    {
+        contentbox = "Choose song from genius.com";
         regex_str = "\"full_title\":\"(?<song>.+?) by.(?<artist>.+?)\".+?\"path\":\"(?<link>.+?)\"";
+    }
     else
+    {
+        contentbox = "Choose song from azlyrics.com";
         regex_str = "\\d{1,2}. <a href=\"(?<link>https://www.azlyrics.com/lyrics/.+?html)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
-
+    }
     QRegularExpression regex = QRegularExpression( regex_str
                                , QRegularExpression::DotMatchesEverythingOption);
 
@@ -326,7 +314,7 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
     {
         bool ok;
         QString item = QInputDialog::getItem(this, tr("Choose your song"),
-                                                   tr("Choose your song"),
+                                                   contentbox,
                                                    items, 0, false, &ok);
         if (ok && !item.isEmpty())
         {
@@ -345,7 +333,6 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
 
             getPage(lyrics_url);
 
-
             QMessageBox::StandardButton reply;
             reply = QMessageBox::question(this, "Download song?","Download song?",
                                           QMessageBox::Yes|QMessageBox::No);
@@ -355,12 +342,21 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
                 downloadSongYoutube(item);
             }
         }
+        else
+        {
+            if (reply->url().toString().contains("genius.com"))
+            {
+                request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
+                manager->get(request);
+                return;
+            }
+        }
     }
     else
     {
-        if (reply->url().toString().contains("azlyrics"))
+        if (reply->url().toString().contains("genius.com"))
         {
-            request.setUrl(QUrl("https://genius.com/api/search/song?page=1&q=" + search_string));
+            request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
             manager->get(request);
             return;
         }
@@ -384,7 +380,7 @@ QString MainWindow::getGeniusSongName(const QString &page)
     int artist_end = page.indexOf("<", artist_start);
     song_title.prepend(page.mid(artist_start, artist_end - artist_start));
 
-    return song_title;
+    return song_title.remove("\"");
 }
 
 bool MainWindow::handleLyricsReply(QNetworkReply *reply)
@@ -400,7 +396,9 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int end_pos = page.indexOf("</div>", start_pos);
 
         lyrics = page.mid(start_pos, end_pos - start_pos);
-        lyrics.remove("<br>");
+        lyrics.replace("&quot;", "''");
+        QRegularExpression regexp("<br>|<i>|</i>|\\[.+?\\]|\"");
+        lyrics.remove(regexp);
     }
     else if (QRegularExpression("^https://genius.com/[A-Za-z0-9_-]+$").match(url).hasMatch())
     {
@@ -408,7 +406,8 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int start = page.indexOf("<!--sse-->", page.indexOf("<!--sse-->") + 1) + 26;
         int end = page.indexOf("<!--/sse-->", start) - 19;
         lyrics = page.mid(start, end - start);
-        QRegularExpression regexp("<a href=.+?>|<br>|</a>|\\[.+?\\]|<p>|</p>",
+        lyrics.replace("&quot;", "''");
+        QRegularExpression regexp("<a href=.+?>|<br>|</a>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
 
@@ -499,7 +498,7 @@ void MainWindow::on_searchOnlineButton_clicked()
 
     if (ok && !text.isEmpty())
     {
-        request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + text + "&w=songs&p=1"));
+        request.setUrl(QUrl("https://genius.com/api/search/song?page=1&q=" + text));
         manager->get(request);
     }
 }
@@ -522,6 +521,7 @@ void MainWindow::songCooked()
             if (filename.endsWith(".wav"))
             {
                 dl_file_name.replace("_", " ");
+                dl_file_name.remove("\"");
                 dl_file_name.replace(QChar(0x00A0), " ");
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
@@ -584,4 +584,27 @@ void MainWindow::on_youtubeButton_clicked()
     {
         downloadSongYoutube(text);
     }
+}
+
+void MainWindow::loadDropListPaths()
+{
+    ui->dropList->clear();
+    foreach (const ConfigEntry &config, configController.getConfigEntries())
+    {
+        ui->dropList->addItem(config.getFullName(), config.getName());
+    }
+
+    int index = ui->dropList->findData(configController.getCurrentConfig().getName());
+    if ( index != -1 ) {
+        ui->dropList->setCurrentIndex(index);
+    }
+}
+
+void MainWindow::on_dropList_activated(const QString &item)
+{
+    configController.choose(item);
+    ConfigEntry config = configController.getCurrentConfig();
+
+    tracklist.setFileName(config.getPath() + "/lyrics_list.cfg");
+    dest.setFileName(config.getPath() + "/lyricsmaster.cfg");
 }

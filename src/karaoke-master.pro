@@ -26,10 +26,14 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    configentry.cpp \
+    configcontroller.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    configentry.h \
+    configcontroller.h
 
 FORMS += \
         mainwindow.ui
