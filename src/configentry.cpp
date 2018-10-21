@@ -57,11 +57,6 @@ void ConfigEntry::setStatus(bool status)
     this->status = status;
 }
 
-QString getAppId(const QString &path)
-{
-
-}
-
 QString ConfigEntry::getName() const
 {
     return name;

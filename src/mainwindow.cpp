@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!configController.getConfigEntries().isEmpty())
     {
         ui->startButton->setEnabled(true);
+
+        refreshScriptPaths();
         loadDropListPaths();
     }
 
@@ -163,6 +165,7 @@ void MainWindow::on_directoryButton_clicked()
         ui->startButton->setEnabled(true);
 
         configController.addConfig(ConfigEntry(dir));
+        refreshScriptPaths();
         loadDropListPaths();
     }
     else
@@ -603,6 +606,11 @@ void MainWindow::loadDropListPaths()
 void MainWindow::on_dropList_activated(const QString &item)
 {
     configController.choose(item);
+    refreshScriptPaths();
+}
+
+void MainWindow::refreshScriptPaths()
+{
     ConfigEntry config = configController.getCurrentConfig();
 
     tracklist.setFileName(config.getPath() + "/lyrics_list.cfg");

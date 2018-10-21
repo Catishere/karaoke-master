@@ -31,9 +31,6 @@ public:
     QString getFullName() const;
     bool getStatus() const;
     void setStatus(bool status);
-
-private:
-    QString getAppId(const QString &path);
 };
 
 #endif // CONFIGENTRY_H

@@ -40,6 +40,7 @@ public:
     void downloadSongYoutube(const QString &params);
     void loadSong(int songid);
     void loadDropListPaths();
+    void refreshScriptPaths();
 
 private slots:
 
