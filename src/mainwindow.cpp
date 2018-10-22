@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(managerFinished(QNetworkReply*)));
 
+    setWindowIcon(QIcon(":/icon/favicon.ico"));
+
     refreshSongList();
 }
 
