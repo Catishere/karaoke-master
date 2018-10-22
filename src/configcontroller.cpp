@@ -141,5 +141,4 @@ void ConfigController::setAccountId(const QString &accountId)
 {
     this->accountId = accountId;
     choose(currentConfig->getFullName());
-    saveConfig();
 }
