@@ -41,6 +41,8 @@ public:
     void loadSong(int songid);
     void loadDropListPaths();
     void refreshScriptPaths();
+    void updateAccount();
+    const QStringList getMostRecentUser() const;
 
 private slots:
 
@@ -65,6 +67,8 @@ private slots:
     void songCooked();
 
     void on_dropList_activated(const QString &arg1);
+
+    void on_updateAccountButton_clicked();
 
 private:
     Ui::MainWindow *ui;

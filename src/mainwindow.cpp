@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!configController.getConfigEntries().isEmpty())
     {
         ui->startButton->setEnabled(true);
-
+        updateAccount();
         refreshScriptPaths();
         loadDropListPaths();
     }
@@ -615,4 +615,60 @@ void MainWindow::refreshScriptPaths()
 
     tracklist.setFileName(config.getPath() + "/lyrics_list.cfg");
     dest.setFileName(config.getPath() + "/lyricsmaster.cfg");
+}
+
+const QStringList MainWindow::getMostRecentUser() const
+{
+    QString udpath = configController.getUserDataPath();
+    QString steamPath = udpath.left(udpath.indexOf("/Steam/") + 7);
+    QString steamConfig = steamPath + "/config/loginusers.vdf";
+    QFile steamConfigFile(steamConfig);
+
+    if (!steamConfigFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open steam config file.");
+        return QStringList();
+    }
+
+    QByteArray file_data = steamConfigFile.readAll();
+
+    QStringList result;
+
+    QString regex_str = "(?<steamid64>\\d+?)\".+?\"AccountName\"\\s+?\"(?<username>.+?)\".+?\"mostrecent\"\\s+?\"(?<mostrecent>\\d)\"";
+    QRegularExpression regex = QRegularExpression( regex_str,
+                               QRegularExpression::DotMatchesEverythingOption);
+
+    QRegularExpressionMatchIterator i = regex.globalMatch(file_data);
+
+    while (true)
+    {
+        if (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            QString steamid64 = match.captured("steamid64");
+            QString username = match.captured("username");
+            QString mostrecent = match.captured("mostrecent");
+
+            if (mostrecent == "1")
+            {
+                qlonglong num = (steamid64.toLongLong() & 0xFFFFFFFF);
+                result << username << QString::number(num);
+                break;
+            }
+        }
+        else
+            break;
+    }
+
+    return result;
+}
+
+void MainWindow::updateAccount()
+{
+    QStringList user = getMostRecentUser();
+    ui->account->setText(user.at(0));
+    configController.setAccountId(user.at(1));
+}
+
+void MainWindow::on_updateAccountButton_clicked()
+{
+    updateAccount();
 }

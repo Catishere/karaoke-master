@@ -28,10 +28,12 @@ public:
     QString getUserDataPath() const;
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
+    void setAccountId(const QString &accountId);
 
 private:
     ConfigEntry *currentConfig;
     QString currentGamePath;
+    QString accountId;
     QString userdataPath;
     QList<ConfigEntry> configEntries;
 };
