@@ -394,6 +394,8 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
     QString lyrics;
     QString url = reply->url().toString();
 
+    temp_lyrics_name.replace(QChar(0xA0), " ");
+
     if (url.startsWith("https://www.azlyrics.com/lyrics/"))
     {
         QString page = reply->readAll();
@@ -412,11 +414,9 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int end = page.indexOf("<!--/sse-->", start) - 19;
         lyrics = page.mid(start, end - start);
         lyrics.replace("&quot;", "''");
-        QRegularExpression regexp("<a href=.+?>|<br>|</a>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
+        QRegularExpression regexp("<a href=.+?>|<br>|</a>|<i>|</i>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
-
-        temp_lyrics_name = getGeniusSongName(page);
     }
     else
     {
