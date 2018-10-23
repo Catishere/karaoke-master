@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
         loadDropListPaths();
     }
 
+    sayType = "say";
+
     manager = new QNetworkAccessManager();
     QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(managerFinished(QNetworkReply*)));
@@ -130,7 +132,7 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         line = line.trimmed();
 
         if (!line.isEmpty()) {
-            QString cfg_line = QString("alias song%1lyrics%2 \"say ~ %3 ;alias spamycs song%4lyrics%5\"\n")
+            QString cfg_line = QString("alias song%1lyrics%2 \""+ sayType +" ~ %3 ;alias spamycs song%4lyrics%5\"\n")
                  .arg(id, QString::number(i), line, id, QString::number(i + 1));
             dest.write(cfg_line.toUtf8());
         }
@@ -138,7 +140,7 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         else i--;
     }
 
-    QString str = QString("alias song%1lyrics%2 say \"---THE END---\";alias spamycs;\n")
+    QString str = QString("alias song%1lyrics%2 "+ sayType +" \"---THE END---\";alias spamycs;\n")
                         .arg(id, QString::number(i));
     dest.write(str.toUtf8());
 
@@ -148,9 +150,10 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
 bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
+    QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
     QString str("alias song" + id + " \"alias spamycs song" + id + "lyrics0;"
-                "bind " + relay_key + " " + id + ";echo \"Current song: " + id + "\";"
-                "host_writeconfig lyrics_trigger;\n");
+                "bind " + relay_key + " " + id + ";echo \"Current song: " + songname + "\";"
+                "host_writeconfig lyrics_trigger;alias lyrics_current \"say "+ songname + "\";\n");
     dest.write(str.toUtf8());
     return true;
 }
@@ -414,7 +417,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int end = page.indexOf("<!--/sse-->", start) - 19;
         lyrics = page.mid(start, end - start);
         lyrics.replace("&quot;", "''");
-        QRegularExpression regexp("<a href=.+?>|<br>|</a>|<i>|</i>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
+        QRegularExpression regexp("<a.+?>|<br>|</a>|<i>|</i>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
     }
@@ -673,4 +676,12 @@ void MainWindow::updateAccount()
 void MainWindow::on_updateAccountButton_clicked()
 {
     updateAccount();
+}
+
+void MainWindow::on_tsayCheckBox_stateChanged(int state)
+{
+    if (state)
+        sayType = "say_team";
+    else
+        sayType = "say";
 }

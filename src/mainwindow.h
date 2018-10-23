@@ -70,10 +70,11 @@ private slots:
 
     void on_updateAccountButton_clicked();
 
+    void on_tsayCheckBox_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
-    QString hldir;
-    QString hldir_root;
+    QString sayType;
     ConfigController configController;
     QString temp_lyrics_name;
     QFile tracklist;
