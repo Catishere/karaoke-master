@@ -150,10 +150,11 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
 bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
-    QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
+    QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text().toUtf8();
+
     QString str("alias song" + id + " \"alias spamycs song" + id + "lyrics0;"
                 "bind " + relay_key + " " + id + ";echo \"Current song: " + songname + "\";"
-                "host_writeconfig lyrics_trigger;alias lyrics_current \"say "+ songname + "\";\n");
+                "host_writeconfig lyrics_trigger;alias lyrics_current \"say Current Song: "+ songname + "\";\n");
     dest.write(str.toUtf8());
     return true;
 }
@@ -407,7 +408,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
 
         lyrics = page.mid(start_pos, end_pos - start_pos);
         lyrics.replace("&quot;", "''");
-        QRegularExpression regexp("<br>|<i>|</i>|\\[.+?\\]|\"");
+        QRegularExpression regexp("<.+?>|\\[.+?\\]|\"");
         lyrics.remove(regexp);
     }
     else if (QRegularExpression("^https://genius.com/[A-Za-z0-9_-]+$").match(url).hasMatch())
@@ -417,7 +418,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
         int end = page.indexOf("<!--/sse-->", start) - 19;
         lyrics = page.mid(start, end - start);
         lyrics.replace("&quot;", "''");
-        QRegularExpression regexp("<a.+?>|<br>|</a>|<i>|</i>|\\[.+?\\]|<p>|</p>|<b>|</b>|\"",
+        QRegularExpression regexp("<.+?>|\\[.+?\\]|\"",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
     }
