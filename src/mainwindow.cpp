@@ -132,16 +132,16 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         line = line.trimmed();
 
         if (!line.isEmpty()) {
-            QString cfg_line = QString("alias song%1lyrics%2 \""+ sayType +" ~ %3 ;alias spamycs song%4lyrics%5\"\n")
-                 .arg(id, QString::number(i), line, id, QString::number(i + 1));
+            QString cfg_line = QString("alias song%1lyrics%2 \"%3 ~ %4 ;alias spamycs song%5lyrics%6\"\n")
+                 .arg(id, QString::number(i), sayType, line, id, QString::number(i + 1));
             dest.write(cfg_line.toUtf8());
         }
 
         else i--;
     }
 
-    QString str = QString("alias song%1lyrics%2 "+ sayType +" \"---THE END---\";alias spamycs;\n")
-                        .arg(id, QString::number(i));
+    QString str = QString("alias song%1lyrics%2 %3 \"---THE END---\";alias spamycs;\n")
+                        .arg(id, QString::number(i), sayType);
     dest.write(str.toUtf8());
 
     return true;
@@ -150,11 +150,15 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
 bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
-    QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text().toUtf8();
+    QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
+    QString str = QStringLiteral("alias echo_current_song \"echo Current song:"
+                                 " %1\";alias say_current_song \"%2 Current"
+                                 " Song: %3\";alias song%4 \"alias spamycs"
+                                 " song%5lyrics0;bind %6 %7;echo_current_song;"
+                                 "host_writeconfig lyrics_trigger;alias"
+                                 " lyrics_current say_current_song;\n")
+                .arg(songname, sayType, songname,id, id, relay_key, id);
 
-    QString str("alias song" + id + " \"alias spamycs song" + id + "lyrics0;"
-                "bind " + relay_key + " " + id + ";echo \"Current song: " + songname + "\";"
-                "host_writeconfig lyrics_trigger;alias lyrics_current \"say Current Song: "+ songname + "\";\n");
     dest.write(str.toUtf8());
     return true;
 }
@@ -215,7 +219,29 @@ void MainWindow::checkConfigFile()
         loadSong(cfg.mid(start, end - start).toInt());
     }
 }
-void MainWindow::start()
+void MainWindow::updateConfigSongList()
+{
+    tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
+
+    dest.write(QString("alias spamycs say_team \"type exec lyrics_list.cfg in the "
+                              "console to see list with available songs\"\nalias karaoke_play karaoke_play_on\n"
+                              "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
+                              " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
+                              "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
+                              " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n").toUtf8());
+    createTracklistFile();
+
+    for (int i = 0; i < ui->tableWidget->rowCount(); i++)
+    {
+        addSongToConfig(ui->tableWidget->item(i, 2)->text(), QString::number(i + 1));
+        createSongIndex(QString::number(i+1));
+    }
+
+    tracklist.close();
+    dest.close();
+}
+void MainWindow::on_startButton_clicked()
 {
     if (ui->startButton->text() == "Start")
     {
@@ -236,30 +262,7 @@ void MainWindow::start()
         ui->startButton->setText("Start");
         timer->stop();
     }
-
-    tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
-    dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
-
-    dest.write("alias spamycs say_team \"type exec lyrics_list.cfg in the console to see list with available songs\"\n");
-    dest.write("alias karaoke_play karaoke_play_on\n"
-               "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
-               " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
-               "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
-               " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n");
-    createTracklistFile();
-
-    for (int i = 0; i < ui->tableWidget->rowCount(); i++)
-    {
-        addSongToConfig(ui->tableWidget->item(i, 2)->text(), QString::number(i + 1));
-        createSongIndex(QString::number(i+1));
-    }
-
-    tracklist.close();
-    dest.close();
-}
-void MainWindow::on_startButton_clicked()
-{
-    start();
+    updateConfigSongList();
 }
 
 void MainWindow::on_addSongButton_clicked()
@@ -545,20 +548,21 @@ void MainWindow::songCooked()
             }
         }
 
-        QMessageBox msgbox;
-        if (success)
-        {
-            msgbox.setText("Song Downloaded!");
-            start();
-        }
-        else
-            msgbox.setText("Song Failed to download!");
-        msgbox.exec();
-
-        dl_file_timer->stop();
-
-        refreshSongList();
     }
+
+    QMessageBox msgbox;
+    if (success)
+    {
+        msgbox.setText("Song Downloaded!");
+        updateConfigSongList();
+    }
+    else
+        msgbox.setText("Song Failed to download!");
+    msgbox.exec();
+
+    dl_file_timer->stop();
+
+    refreshSongList();
 }
 
 void MainWindow::downloadSongYoutube(const QString &params)

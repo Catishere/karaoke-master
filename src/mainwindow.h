@@ -42,7 +42,7 @@ public:
     void loadDropListPaths();
     void refreshScriptPaths();
     void updateAccount();
-    void start();
+    void updateConfigSongList();
     const QStringList getMostRecentUser() const;
 
 private slots:
