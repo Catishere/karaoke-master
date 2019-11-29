@@ -108,7 +108,10 @@ bool ConfigController::choose(const QString &full_name)
     }
 
     QString path = currentConfig->getPath();
-    QString userpath = "/userdata/"+ accountId +"/"+ currentConfig->getCode() +"/local/cfg/lyrics_trigger.cfg";
+    QString userpath = "/userdata/"
+            + accountId +"/"
+            + currentConfig->getCode()
+            + "/local/cfg/lyrics_trigger.cfg";
     userdataPath = path.left(path.indexOf("/steamapps")) + userpath;
     currentGamePath = path.left(path.indexOf('/', path.indexOf("common") + 8));
 

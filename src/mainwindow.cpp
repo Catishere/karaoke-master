@@ -572,7 +572,7 @@ void MainWindow::downloadSongYoutube(const QString &params)
 
     QString program = "youtube-dl.exe -x --extract-audio --audio-format wav " + search_str + " "
                       "--postprocessor-args \"-fflags +bitexact -ac 1 -ab 352k -ar 22050\"";
-
+// youtube-dl.exe -x --extract-audio --audio-format wav ytsearch: toto-africa --postprocessor-args "-fflags +bitexact -ac 1 -ab 352k -ar 22050"
     dl_file_timer = new QTimer(this);
     dl_file_name = name_str;
     connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
