@@ -42,6 +42,7 @@ public:
     void loadDropListPaths();
     void refreshScriptPaths();
     void updateAccount();
+    void start();
     const QStringList getMostRecentUser() const;
 
 private slots:

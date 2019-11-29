@@ -215,8 +215,7 @@ void MainWindow::checkConfigFile()
         loadSong(cfg.mid(start, end - start).toInt());
     }
 }
-
-void MainWindow::on_startButton_clicked()
+void MainWindow::start()
 {
     if (ui->startButton->text() == "Start")
     {
@@ -257,6 +256,10 @@ void MainWindow::on_startButton_clicked()
 
     tracklist.close();
     dest.close();
+}
+void MainWindow::on_startButton_clicked()
+{
+    start();
 }
 
 void MainWindow::on_addSongButton_clicked()
@@ -447,7 +450,7 @@ void MainWindow::getPage(const QString &url)
 {
     QNetworkRequest getLyricsReq;
     getLyricsReq.setUrl(QUrl(url));
-    QString user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36";
+    QString user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36";
     getLyricsReq.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
     manager->get(getLyricsReq);
 }
@@ -544,7 +547,10 @@ void MainWindow::songCooked()
 
         QMessageBox msgbox;
         if (success)
+        {
             msgbox.setText("Song Downloaded!");
+            start();
+        }
         else
             msgbox.setText("Song Failed to download!");
         msgbox.exec();
@@ -572,7 +578,7 @@ void MainWindow::downloadSongYoutube(const QString &params)
 
     QString program = "youtube-dl.exe -x --extract-audio --audio-format wav " + search_str + " "
                       "--postprocessor-args \"-fflags +bitexact -ac 1 -ab 352k -ar 22050\"";
-// youtube-dl.exe -x --extract-audio --audio-format wav ytsearch: toto-africa --postprocessor-args "-fflags +bitexact -ac 1 -ab 352k -ar 22050"
+
     dl_file_timer = new QTimer(this);
     dl_file_name = name_str;
     connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
