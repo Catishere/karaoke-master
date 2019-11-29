@@ -541,11 +541,8 @@ void MainWindow::songCooked()
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
             }
-            else
-            {
-                if (QFileInfo::exists(filename))
-                    QFile::remove(filename);
-            }
+            else if (QFileInfo::exists(filename))
+                QFile::remove(filename);
         }
 
     }
