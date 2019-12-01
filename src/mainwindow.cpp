@@ -151,13 +151,11 @@ bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
     QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
-    QString str = QStringLiteral("alias echo_current_song \"echo Current song:"
-                                 " %1\";alias say_current_song \"%2 Current"
-                                 " Song: %3\";alias song%4 \"alias spamycs"
-                                 " song%5lyrics0;bind %6 %7;echo_current_song;"
-                                 "host_writeconfig lyrics_trigger;alias"
-                                 " lyrics_current say_current_song;\n")
-                .arg(songname, sayType, songname,id, id, relay_key, id);
+    QString str = QStringLiteral("alias say_song%2 \"%4 Current"
+                                 " Song: %1\";alias song%2 \"alias spamycs song%2lyrics0;"
+                                 "bind %3 %2; alias lyrics_current say_song%2;"
+                                 "host_writeconfig lyrics_trigger;\n")
+                .arg(songname, id, relay_key, sayType);
 
     dest.write(str.toUtf8());
     return true;
@@ -225,11 +223,11 @@ void MainWindow::updateConfigSongList()
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
     dest.write(QString("alias spamycs say_team \"type exec lyrics_list.cfg in the "
-                              "console to see list with available songs\"\nalias karaoke_play karaoke_play_on\n"
-                              "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
-                              " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
-                              "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
-                              " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n").toUtf8());
+                      "console to see list with available songs\"\nalias karaoke_play karaoke_play_on\n"
+                      "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
+                      " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
+                      "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
+                      " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n").toUtf8());
     createTracklistFile();
 
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
@@ -301,7 +299,7 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
         regex_str = "\\d{1,2}. <a href=\"(?<link>https://www.azlyrics.com/lyrics/.+?html)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
     }
     QRegularExpression regex = QRegularExpression( regex_str
-                               , QRegularExpression::DotMatchesEverythingOption);
+                               ,QRegularExpression::DotMatchesEverythingOption);
 
     QStringList items;
     QStringList links;
@@ -405,6 +403,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
     QString url = reply->url().toString();
 
     temp_lyrics_name.replace(QChar(0xA0), " ");
+    temp_lyrics_name.replace(QRegExp("[%.\\/:]"), " ");
 
     if (url.startsWith("https://www.azlyrics.com/lyrics/"))
     {
@@ -535,8 +534,6 @@ void MainWindow::songCooked()
             QString filename = ffmpegsux.at(i);
             if (filename.endsWith(".wav"))
             {
-                dl_file_name.replace("_", " ");
-                dl_file_name.remove("\"");
                 dl_file_name.replace(QChar(0x00A0), " ");
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
@@ -544,7 +541,6 @@ void MainWindow::songCooked()
             else if (QFileInfo::exists(filename))
                 QFile::remove(filename);
         }
-
     }
 
     QMessageBox msgbox;
@@ -562,30 +558,31 @@ void MainWindow::songCooked()
     refreshSongList();
 }
 
-void MainWindow::downloadSongYoutube(const QString &params)
+void MainWindow::downloadSongYoutube(QString &song_name)
 {
     QProcess *process = new QProcess(this);
 
     QString search_str;
-    QString name_str;
 
-    name_str = params;
-    name_str.replace(" ", "_");
-
-    if (params.startsWith("https://"))
-        search_str = params;
+    if (song_name.startsWith("https://"))
+        search_str = song_name;
     else
-        search_str = "\"ytsearch: " + params + "\"";
-
+    {
+        song_name.replace(QRegExp("[%.\\/: ]"), " ");
+        search_str = "\"ytsearch: " + song_name + "\"";
+    }
     QString program = "youtube-dl.exe -x --extract-audio --audio-format wav " + search_str + " "
                       "--postprocessor-args \"-fflags +bitexact -ac 1 -ab 352k -ar 22050\"";
 
+    qDebug() << program;
+
     dl_file_timer = new QTimer(this);
-    dl_file_name = name_str;
+    dl_file_name = song_name;
     connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
 
     process->start(program);
     process->waitForFinished(10000);
+    qDebug() << QString(process->readAllStandardOutput());
     process->close();
     dl_file_timer->start(800);
 }

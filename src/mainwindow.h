@@ -37,7 +37,7 @@ public:
     bool handleLyricsReply(QNetworkReply *reply);
     QString getGeniusSongName(const QString &page);
     void handleLyricsSearchReply(QNetworkReply *reply);
-    void downloadSongYoutube(const QString &params);
+    void downloadSongYoutube(QString &song_name);
     void loadSong(int songid);
     void loadDropListPaths();
     void refreshScriptPaths();
