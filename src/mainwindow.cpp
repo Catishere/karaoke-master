@@ -407,7 +407,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
 
     if (url.startsWith("https://www.azlyrics.com/lyrics/"))
     {
-        QString page = reply->readAll();
+        QByteArray page = reply->readAll();
         int start_pos = page.indexOf("<!-- Usage of azlyrics.com content") + 134;
         int end_pos = page.indexOf("</div>", start_pos);
 
@@ -418,14 +418,18 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
     }
     else if (QRegularExpression("^https://genius.com/[A-Za-z0-9_-]+$").match(url).hasMatch())
     {
-        QString page = reply->readAll();
-        int start = page.indexOf("<!--sse-->", page.indexOf("<!--sse-->") + 1) + 26;
-        int end = page.indexOf("<!--/sse-->", start) - 19;
+        QByteArray page = reply->readAll();
+        int start = page.indexOf("<div class=\"lyrics\">");
+        int end = page.indexOf("<!--/sse-->", start);
+
         lyrics = page.mid(start, end - start);
-        lyrics.replace("&quot;", "''");
-        QRegularExpression regexp("<.+?>|\\[.+?\\]|\"",
+        QRegularExpression regexp("<.+?>",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
+        QRegularExpression regexp2("\\[.+?\\]");
+        lyrics.remove(regexp2);
+        lyrics.replace("&quot;", "'");
+        lyrics = lyrics.trimmed();
     }
     else
     {
@@ -643,7 +647,7 @@ const QStringList MainWindow::getMostRecentUser() const
 
     QStringList result;
 
-    QString regex_str = "(?<steamid64>\\d+?)\".+?\"AccountName\"\\s+?\"(?<username>.+?)\".+?\"mostrecent\"\\s+?\"(?<mostrecent>\\d)\"";
+    QString regex_str = "\"(?<steamid64>\\d+)\"\\s+?{\\s+?\"AccountName\"\\s+?\"(?<username>.+?)\".+?\"MostRecent\"\\s+\"(?<mostrecent>\\d)\".+?}";
     QRegularExpression regex = QRegularExpression( regex_str,
                                QRegularExpression::DotMatchesEverythingOption);
 
