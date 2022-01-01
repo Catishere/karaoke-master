@@ -20,6 +20,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     sayType = "say";
 
+    QDir dir_lyrics("/lyrics");
+    QDir dir_songs("/songs");
+    if (!dir_lyrics.exists())
+        dir_lyrics.mkpath(".");
+    if (!dir_songs.exists())
+        dir_songs.mkpath(".");
+
     manager = new QNetworkAccessManager();
     QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(managerFinished(QNetworkReply*)));
@@ -298,8 +305,8 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
         contentbox = "Choose song from azlyrics.com";
         regex_str = "\\d{1,2}. <a href=\"(?<link>https://www.azlyrics.com/lyrics/.+?html)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
     }
-    QRegularExpression regex = QRegularExpression( regex_str
-                               ,QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpression regex = QRegularExpression( regex_str,
+                                                   QRegularExpression::DotMatchesEverythingOption);
 
     QStringList items;
     QStringList links;
@@ -381,6 +388,49 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
     search_string = "";
 }
 
+bool MainWindow::handleYTDLUpdate(QNetworkReply *reply)
+{
+    QString reply_url = reply->url().toString();
+    if (!reply_url.startsWith("https://objects.githubusercontent")
+            && !reply_url.startsWith("https://api.github.com"))
+        return false;
+
+    if (reply_url.startsWith("https://api.github.com")) {
+        QByteArray data = reply->readAll();
+        QRegularExpression regex("https:..github.com.yt-dlp.yt-dlp.releases.download.\\d{4,4}\\.\\d\\d\\.\\d\\d.yt-dlp.exe");
+        QString dl_url = regex.match(data).captured(0);
+
+        QFile ytdlv("ytdl_link.txt");
+        if (!ytdlv.open(QIODevice::ReadOnly))
+                return true;
+        QString saved_url = ytdlv.readAll();
+        ytdlv.close();
+        if (dl_url == saved_url) {
+            QMessageBox box;
+            box.setText("Skipping. Already up to date!");
+            box.exec();
+            return true;
+        }
+        if (!ytdlv.open(QIODevice::WriteOnly))
+                return true;
+        ytdlv.write(dl_url.toLatin1());
+        ytdlv.close();
+        request.setUrl(QUrl(dl_url));
+        manager->get(request);
+    } else {
+        QFile file("yt-dlp.exe");
+        if (!file.open(QIODevice::WriteOnly))
+                return true;
+        file.write(reply->readAll());
+        file.close();
+        QMessageBox box;
+        box.setText("yt-dl.exe has been updated!");
+        box.exec();
+    }
+
+    return true;
+}
+
 QString MainWindow::getGeniusSongName(const QString &page)
 {
     QString song_title = " - ";
@@ -403,7 +453,7 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
     QString url = reply->url().toString();
 
     temp_lyrics_name.replace(QChar(0xA0), " ");
-    temp_lyrics_name.replace(QRegExp("[%.\\/:]"), " ");
+    temp_lyrics_name.replace(QRegularExpression("[%.\\/:]"), " ");
 
     if (url.startsWith("https://www.azlyrics.com/lyrics/"))
     {
@@ -419,16 +469,25 @@ bool MainWindow::handleLyricsReply(QNetworkReply *reply)
     else if (QRegularExpression("^https://genius.com/[A-Za-z0-9_-]+$").match(url).hasMatch())
     {
         QByteArray page = reply->readAll();
-        int start = page.indexOf("<div class=\"lyrics\">");
-        int end = page.indexOf("<!--/sse-->", start);
+
+        int start = page.indexOf("<div data-lyrics-container=\"true\"");
+        int end = page.indexOf("</div>", start);
+        int temp = page.indexOf("<div data-lyrics-container=\"true\"");
+        while (temp >= 0){
+            end = page.indexOf("</div>", temp);
+            temp = page.indexOf("<div data-lyrics-container=\"true\"", temp + 10);
+        }
+
 
         lyrics = page.mid(start, end - start);
+        lyrics.replace("<br/>", "\n");
         QRegularExpression regexp("<.+?>",
                                   QRegularExpression::DotMatchesEverythingOption);
         lyrics = lyrics.remove(regexp);
         QRegularExpression regexp2("\\[.+?\\]");
         lyrics.remove(regexp2);
         lyrics.replace("&quot;", "'");
+        lyrics.replace("&#x27;", "'");
         lyrics = lyrics.trimmed();
     }
     else
@@ -456,7 +515,7 @@ void MainWindow::getPage(const QString &url)
 {
     QNetworkRequest getLyricsReq;
     getLyricsReq.setUrl(QUrl(url));
-    QString user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36";
+    QString user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36";
     getLyricsReq.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
     manager->get(getLyricsReq);
 }
@@ -468,6 +527,9 @@ void MainWindow::managerFinished(QNetworkReply *reply)
         qDebug() << reply->errorString();
         return;
     }
+
+    if (handleYTDLUpdate(reply))
+        return;
 
     if (handleLyricsReply(reply))
         return;
@@ -572,11 +634,11 @@ void MainWindow::downloadSongYoutube(QString &song_name)
         search_str = song_name;
     else
     {
-        song_name.replace(QRegExp("[%.\\/: ]"), " ");
+        song_name.replace(QRegularExpression("[%.\\/: ]"), " ");
         search_str = "\"ytsearch: " + song_name + "\"";
     }
-    QString program = "youtube-dl.exe -x --extract-audio --audio-format wav " + search_str + " "
-                      "--postprocessor-args \"-fflags +bitexact -ac 1 -ab 352k -ar 22050\"";
+    QString program = "yt-dlp.exe -x --extract-audio --audio-format wav " + search_str + " "
+                      "--ppa \"ffmpeg: -bitexact -ac 1 -ab 352k -ar 22050\"";
 
     qDebug() << program;
 
@@ -694,3 +756,11 @@ void MainWindow::on_tsayCheckBox_stateChanged(int state)
     else
         sayType = "say";
 }
+
+void MainWindow::on_updateYTDL_button_clicked()
+{
+    QNetworkRequest req;
+    req.setUrl(QUrl("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest"));
+    manager->get(req);
+}
+

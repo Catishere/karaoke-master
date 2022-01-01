@@ -37,6 +37,7 @@ public:
     bool handleLyricsReply(QNetworkReply *reply);
     QString getGeniusSongName(const QString &page);
     void handleLyricsSearchReply(QNetworkReply *reply);
+    bool handleYTDLUpdate(QNetworkReply *reply);
     void downloadSongYoutube(QString &song_name);
     void loadSong(int songid);
     void loadDropListPaths();
@@ -72,6 +73,8 @@ private slots:
     void on_updateAccountButton_clicked();
 
     void on_tsayCheckBox_stateChanged(int arg1);
+
+    void on_updateYTDL_button_clicked();
 
 private:
     Ui::MainWindow *ui;

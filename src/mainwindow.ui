@@ -56,10 +56,10 @@
     <attribute name="verticalHeaderVisible">
      <bool>false</bool>
     </attribute>
-    <attribute name="verticalHeaderDefaultSectionSize">
+    <attribute name="verticalHeaderMinimumSectionSize">
      <number>20</number>
     </attribute>
-    <attribute name="verticalHeaderMinimumSectionSize">
+    <attribute name="verticalHeaderDefaultSectionSize">
      <number>20</number>
     </attribute>
     <column>
@@ -154,11 +154,29 @@
          </color>
         </brush>
        </colorrole>
+       <colorrole role="PlaceholderText">
+        <brush brushstyle="NoBrush">
+         <color alpha="128">
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </brush>
+       </colorrole>
       </active>
       <inactive>
        <colorrole role="Text">
         <brush brushstyle="SolidPattern">
          <color alpha="255">
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="PlaceholderText">
+        <brush brushstyle="NoBrush">
+         <color alpha="128">
           <red>255</red>
           <green>0</green>
           <blue>0</blue>
@@ -173,6 +191,15 @@
           <red>120</red>
           <green>120</green>
           <blue>120</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="PlaceholderText">
+        <brush brushstyle="NoBrush">
+         <color alpha="128">
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
          </color>
         </brush>
        </colorrole>
@@ -302,6 +329,19 @@
      <string>Team Chat</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="updateYTDL_button">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>170</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Update YTDL</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -309,7 +349,7 @@
      <x>0</x>
      <y>0</y>
      <width>605</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
