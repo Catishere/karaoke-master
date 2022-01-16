@@ -366,6 +366,7 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
         {
             if (reply->url().toString().contains("genius.com"))
             {
+                QNetworkRequest request;
                 request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
                 manager->get(request);
                 return;
@@ -376,6 +377,7 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
     {
         if (reply->url().toString().contains("genius.com"))
         {
+            QNetworkRequest request;
             request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
             manager->get(request);
             return;
@@ -415,6 +417,7 @@ bool MainWindow::handleYTDLUpdate(QNetworkReply *reply)
                 return true;
         ytdlv.write(dl_url.toLatin1());
         ytdlv.close();
+        QNetworkRequest request;
         request.setUrl(QUrl(dl_url));
         manager->get(request);
     } else {
@@ -578,6 +581,7 @@ void MainWindow::on_searchOnlineButton_clicked()
 
     if (ok && !text.isEmpty())
     {
+        QNetworkRequest request;
         request.setUrl(QUrl("https://genius.com/api/search/song?page=1&q=" + text));
         manager->get(request);
     }

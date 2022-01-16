@@ -88,7 +88,6 @@ private:
     QString dl_file_name;
     QString search_string;
     QNetworkAccessManager *manager;
-    QNetworkRequest request;
 };
 
 #endif // MAINWINDOW_H
