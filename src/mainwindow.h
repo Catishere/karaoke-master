@@ -9,6 +9,7 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QProcess>
+#include <QMovie>
 #include <QDebug>
 #include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
@@ -68,6 +69,8 @@ private slots:
 
     void songCooked();
 
+    void downloadFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
     void on_dropList_activated(const QString &arg1);
 
     void on_updateAccountButton_clicked();
@@ -83,7 +86,9 @@ private:
     QString temp_lyrics_name;
     QFile tracklist;
     QFile dest;
+    QMovie *movie;
     QTimer* timer;
+    QTimer* timeout_timer;
     QTimer* dl_file_timer;
     QString dl_file_name;
     QString search_string;

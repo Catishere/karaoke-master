@@ -6,7 +6,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    movie = new QMovie(":/loading.gif");
+    ui->loadingLabel->setVisible(false);
+    movie->setScaledSize(QSize(300, 300));
+    ui->loadingLabel->setMovie(movie);
     ui->tableWidget->setColumnWidth(0, 40);
     ui->tableWidget->setColumnWidth(1, 40);
 
@@ -589,6 +592,9 @@ void MainWindow::on_searchOnlineButton_clicked()
 
 void MainWindow::songCooked()
 {
+    if (timeout_timer->isActive())
+        timeout_timer->stop();
+
     QDir root;
     root.setNameFilters(QStringList() << "*.wav" << "*.webm.part" << "*.webm");
     root.setFilter(QDir::Files);
@@ -613,6 +619,9 @@ void MainWindow::songCooked()
         }
     }
 
+    movie->stop();
+    ui->loadingLabel->setVisible(false);
+
     QMessageBox msgbox;
     if (success)
     {
@@ -626,6 +635,13 @@ void MainWindow::songCooked()
     dl_file_timer->stop();
 
     refreshSongList();
+}
+
+void MainWindow::downloadFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    dl_file_timer = new QTimer(this);
+    dl_file_timer->start(800);
+    connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
 }
 
 void MainWindow::downloadSongYoutube(QString &song_name)
@@ -644,17 +660,16 @@ void MainWindow::downloadSongYoutube(QString &song_name)
     QString program = "yt-dlp.exe -x --extract-audio --audio-format wav " + search_str + " "
                       "--ppa \"ffmpeg: -bitexact -ac 1 -ab 352k -ar 22050\"";
 
-    qDebug() << program;
-
-    dl_file_timer = new QTimer(this);
     dl_file_name = song_name;
-    connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
-
+    timeout_timer = new QTimer(this);
+    timeout_timer->setInterval(10000);
+    timeout_timer->setSingleShot(true);
+    connect(timeout_timer, &QTimer::timeout, this, &MainWindow::songCooked);
+    connect(process, &QProcess::finished, this, &MainWindow::downloadFinished);
+    timeout_timer->start();
+    movie->start();
+    ui->loadingLabel->setVisible(true);
     process->start(program);
-    process->waitForFinished(10000);
-    qDebug() << QString(process->readAllStandardOutput());
-    process->close();
-    dl_file_timer->start(800);
 }
 
 void MainWindow::on_youtubeButton_clicked()

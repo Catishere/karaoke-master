@@ -342,6 +342,22 @@
      <string>Update YTDL</string>
     </property>
    </widget>
+   <widget class="QLabel" name="loadingLabel">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>-1</y>
+      <width>571</width>
+      <height>305</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
