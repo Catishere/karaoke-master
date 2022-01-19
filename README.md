@@ -10,7 +10,7 @@ How to use:
 5. Press Search Online and choose a song by name (e.g. Metallica - Master of puppets).
 6. Search for your song in the drop-down menu if you cant find it try searching something else.
 7. Choose whether you want to download the song along with the lyrics or not.
-8. Press Start.
+8. Press Start (or press Stop and Start again).
 10. Open the source game and type "exec lyricsmaster" in the console.
 11. Join a server.
 12. Write "exec lyrics_list" to see current loaded songs (You may want to bind this to a key for easier use.
