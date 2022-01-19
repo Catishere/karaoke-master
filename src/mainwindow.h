@@ -20,7 +20,7 @@
 #include "configcontroller.h"
 #include "inputdialog.h"
 
-#define VERSION "v1.0.0"
+#define VERSION "v1.0.1"
 
 namespace Ui {
 class MainWindow;

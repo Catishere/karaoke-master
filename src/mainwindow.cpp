@@ -779,7 +779,8 @@ void MainWindow::on_actionGuide_triggered()
 {
     QMessageBox box;
     box.setText("Type exec lyrics_list in the console to see the current loaded songs.\n"
-                "Bind karaoke_play to a key of your liking");
+                "Use the settings menu to choose which keys you want to bind.\n"
+                "Press Start and become a DJ.");
     box.exec();
 }
 
