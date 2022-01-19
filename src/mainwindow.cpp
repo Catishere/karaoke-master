@@ -778,7 +778,8 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionGuide_triggered()
 {
     QMessageBox box;
-    box.setText("Type exec lyrics_list in the console to see the current loaded songs.\n"
+    box.setText("Press Source CFG and choose your Source game cfg folder to begin.\n"
+                "Type exec lyrics_list in the console to see the current loaded songs.\n"
                 "Use the settings menu to choose which keys you want to bind.\n"
                 "Press Start and become a DJ.");
     box.exec();
@@ -796,8 +797,12 @@ void MainWindow::on_actionUpdate_client_triggered()
 void MainWindow::on_actionKey_bindings_triggered()
 {
     auto config = configController.getCurrentConfigRef();
-    if (config == nullptr)
+    if (config == nullptr) {
+        QMessageBox box;
+        box.setText("Choose your source/cfg folder first. (Button Source CFG)");
+        box.exec();
         return;
+    }
     auto keys = config->getKeyBindings();
     if (keys.isEmpty()) {
         keys.append({{"Voice", "x"},{"Lyrics", "mouse4"}});
