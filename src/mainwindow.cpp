@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     movie = new QMovie(":/loading.gif");
     ui->loadingLabel->setVisible(false);
     movie->setScaledSize(QSize(300, 300));
@@ -23,12 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     sayType = "say";
 
-    QDir dir_lyrics("/lyrics");
-    QDir dir_songs("/songs");
-    if (!dir_lyrics.exists())
-        dir_lyrics.mkpath(".");
-    if (!dir_songs.exists())
-        dir_songs.mkpath(".");
+    QDir root(".");
+    root.mkdir("lyrics");
+    root.mkdir("songs");
+    root.mkdir("config");
 
     manager = new QNetworkAccessManager();
     QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
@@ -113,7 +112,8 @@ bool MainWindow::refreshSongList()
 
 bool MainWindow::createTracklistFile()
 {
-    QString list("echo \"--------------------------------------------------------\"\n");
+    QString list("exec lyricsmaster;\n");
+    list.append("echo \"--------------------------------------------------------\"\n");
 
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
     {
@@ -174,9 +174,9 @@ bool MainWindow::createSongIndex(const QString &id)
 void MainWindow::on_directoryButton_clicked()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
-                                                "/",
-                                                QFileDialog::ShowDirsOnly
-                                                | QFileDialog::DontResolveSymlinks);
+                                            "/",
+                                            QFileDialog::ShowDirsOnly
+                                            | QFileDialog::DontResolveSymlinks);
 
     if (!dir.isEmpty() && QDir(dir).entryList().contains("config.cfg"))
     {
@@ -185,6 +185,7 @@ void MainWindow::on_directoryButton_clicked()
         configController.addConfig(ConfigEntry(dir));
         refreshScriptPaths();
         loadDropListPaths();
+        QTimer::singleShot(200, [=](){updateAccount();});
     }
     else
     {
@@ -232,12 +233,23 @@ void MainWindow::updateConfigSongList()
     tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
+    auto keys = configController.getCurrentConfig().getKeyBindings();
+    QString voice_command;
+    QString lyrics_command;
+    for (auto key : keys) {
+        if (key.first == "Voice")
+            voice_command = key.second;
+        else if (key.first == "Lyrics")
+            lyrics_command = key.second;
+    }
     dest.write(QString("alias spamycs say_team \"type exec lyrics_list.cfg in the "
                       "console to see list with available songs\"\nalias karaoke_play karaoke_play_on\n"
                       "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
                       " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
                       "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
-                      " voice_loopback 0; alias karaoke_play karaoke_play_on\";bind x \"karaoke_play\"\n").toUtf8());
+                      " voice_loopback 0; alias karaoke_play karaoke_play_on\";"
+                      "bind " + voice_command + " \"karaoke_play\";"
+                      "bind " + lyrics_command + " spamycs\n").toUtf8());
     createTracklistFile();
 
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
@@ -296,18 +308,10 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
 {
     QString regex_str;
     QString contentbox;
-    bool isGenius = reply->url().toString().contains("genius.com");
 
-    if (isGenius)
-    {
-        contentbox = "Choose song from genius.com";
-        regex_str = "\"full_title\":\"(?<song>.+?) by.(?<artist>.+?)\".+?\"path\":\"(?<link>.+?)\"";
-    }
-    else
-    {
-        contentbox = "Choose song from azlyrics.com";
-        regex_str = "\\d{1,2}. <a href=\"(?<link>https://www.azlyrics.com/lyrics/.+?html)\" target=\"_blank\"><b>(?<song>.+?)</b></a>  by <b>(?<artist>.+?)</b><br>";
-    }
+    contentbox = "Choose song from genius.com";
+    regex_str = "\"full_title\":\"(?<song>.+?) by.(?<artist>.+?)\".+?\"path\":\"(?<link>.+?)\"";
+
     QRegularExpression regex = QRegularExpression( regex_str,
                                                    QRegularExpression::DotMatchesEverythingOption);
 
@@ -318,79 +322,50 @@ void MainWindow::handleLyricsSearchReply(QNetworkReply *reply)
 
     QRegularExpressionMatchIterator i = regex.globalMatch(page);
 
-    while (true)
+    while (i.hasNext())
     {
-        if (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
-            QString link = match.captured("link");
-            QString song = match.captured("song");
-            QString artist = match.captured("artist");
+        QRegularExpressionMatch match = i.next();
+        QString link = match.captured("link");
+        QString song = match.captured("song");
+        QString artist = match.captured("artist");
 
-            items << QString(artist + " - " + song);
-            links << QString(link);
-        }
-        else
-            break;
+        items << QString(artist + " - " + song);
+        links << QString(link);
     }
 
-    if (items.size() > 0)
-    {
-        bool ok;
-        QString item = QInputDialog::getItem(this, tr("Choose your song"),
-                                                   contentbox,
-                                                   items, 0, false, &ok);
-        if (ok && !item.isEmpty())
-        {
-            QString lyrics_url = links.at(items.indexOf(item));
+    search_string = "";
 
-            if (temp_lyrics_name.isEmpty())
-                temp_lyrics_name = item;
-            else
-            {
-                ui->err->setText("Downloading aborted. Another download in progress.");
-                return;
-            }
-
-            if (isGenius)
-                lyrics_url.prepend("https://genius.com");
-
-            getPage(lyrics_url);
-
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(this, "Download song?","Download song?",
-                                          QMessageBox::Yes|QMessageBox::No);
-
-            if (reply == QMessageBox::Yes)
-            {
-                downloadSongYoutube(item);
-            }
-        }
-        else
-        {
-            if (reply->url().toString().contains("genius.com"))
-            {
-                QNetworkRequest request;
-                request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
-                manager->get(request);
-                return;
-            }
-        }
-    }
-    else
-    {
-        if (reply->url().toString().contains("genius.com"))
-        {
-            QNetworkRequest request;
-            request.setUrl(QUrl("https://search.azlyrics.com/search.php?q=" + search_string + "&w=songs&p=1"));
-            manager->get(request);
-            return;
-        }
-
+    if (items.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setText("Couldn't find these lyrics online!");
         msgBox.exec();
+        return;
     }
-    search_string = "";
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, tr("Choose your song"),
+                                               contentbox,
+                                               items, 0, false, &ok);
+    if (ok && !item.isEmpty())
+    {
+        QString lyrics_url = "https://genius.com" + links.at(items.indexOf(item));
+
+        if (!temp_lyrics_name.isEmpty()) {
+            ui->err->setText("Downloading aborted. Another download in progress.");
+            return;
+        }
+
+        temp_lyrics_name = item;
+
+        getPage(lyrics_url);
+
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Download song?","Download song?",
+                                      QMessageBox::Yes|QMessageBox::No);
+
+        if (reply == QMessageBox::Yes)
+            downloadSongYoutube(item);
+    }
 }
 
 bool MainWindow::handleYTDLUpdate(QNetworkReply *reply)
@@ -410,16 +385,19 @@ bool MainWindow::handleYTDLUpdate(QNetworkReply *reply)
                 return true;
         QString saved_url = ytdlv.readAll();
         ytdlv.close();
+
         if (dl_url == saved_url) {
             QMessageBox box;
             box.setText("Skipping. Already up to date!");
             box.exec();
             return true;
         }
+
         if (!ytdlv.open(QIODevice::WriteOnly))
                 return true;
         ytdlv.write(dl_url.toLatin1());
         ytdlv.close();
+
         QNetworkRequest request;
         request.setUrl(QUrl(dl_url));
         manager->get(request);
@@ -543,6 +521,7 @@ void MainWindow::managerFinished(QNetworkReply *reply)
     handleLyricsSearchReply(reply);
 }
 
+
 void MainWindow::on_deleteSongButton_clicked()
 {
     ui->err->setText("");
@@ -637,7 +616,7 @@ void MainWindow::songCooked()
     refreshSongList();
 }
 
-void MainWindow::downloadFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void MainWindow::downloadFinished(int exitCode)
 {
     dl_file_timer = new QTimer(this);
     dl_file_timer->start(800);
@@ -715,6 +694,8 @@ void MainWindow::refreshScriptPaths()
 const QStringList MainWindow::getMostRecentUser() const
 {
     QString udpath = configController.getUserDataPath();
+    if (udpath.isNull() || udpath.isEmpty())
+        return QStringList();
     QString steamPath = udpath.left(udpath.indexOf("/Steam/") + 7);
     QString steamConfig = steamPath + "/config/loginusers.vdf";
     QFile steamConfigFile(steamConfig);
@@ -759,13 +740,9 @@ const QStringList MainWindow::getMostRecentUser() const
 void MainWindow::updateAccount()
 {
     QStringList user = getMostRecentUser();
+    if (user.isEmpty()) return;
     ui->account->setText(user.at(0));
     configController.setAccountId(user.at(1));
-}
-
-void MainWindow::on_updateAccountButton_clicked()
-{
-    updateAccount();
 }
 
 void MainWindow::on_tsayCheckBox_stateChanged(int state)
@@ -776,10 +753,54 @@ void MainWindow::on_tsayCheckBox_stateChanged(int state)
         sayType = "say";
 }
 
-void MainWindow::on_updateYTDL_button_clicked()
+void MainWindow::on_actionUpdate_YTDL_triggered()
 {
     QNetworkRequest req;
     req.setUrl(QUrl("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest"));
     manager->get(req);
+}
+
+
+void MainWindow::on_actionUpdate_account_info_triggered()
+{
+    updateAccount();
+}
+
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox box;
+    box.setText("This is Karaoke master version " VERSION ". Made by Victor G.");
+    box.exec();
+}
+
+
+void MainWindow::on_actionGuide_triggered()
+{
+    QMessageBox box;
+    box.setText("Type exec lyrics_list in the console to see the current loaded songs.\n"
+                "Bind karaoke_play to a key of your liking");
+    box.exec();
+}
+
+
+void MainWindow::on_actionUpdate_client_triggered()
+{
+    QMessageBox box;
+    box.setText("Close the program and run karaoke-master-update.exe to update.");
+    box.exec();
+}
+
+
+void MainWindow::on_actionKey_bindings_triggered()
+{
+    auto config = configController.getCurrentConfigRef();
+    auto keys = config->getKeyBindings();
+    bool ok;
+    KeyBindings list = InputDialog::getStrings(this, keys, &ok);
+    if (ok) {
+        config->setKeyBindings(list);
+        configController.saveConfig();
+    }
 }
 

@@ -43,16 +43,13 @@ bool ConfigController::saveConfig() const
 {
     QFile saveFile(QStringLiteral("config/config.json"));
 
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open save file.");
-        return false;
-    }
+    saveFile.open(QIODevice::WriteOnly);
 
     QJsonObject gameObject;
     write(gameObject);
     QJsonDocument saveDoc(gameObject);
     saveFile.write(saveDoc.toJson());
-
+    saveFile.close();
     return true;
 }
 
@@ -133,6 +130,11 @@ QString ConfigController::getCurrentGamePath() const
 ConfigEntry ConfigController::getCurrentConfig() const
 {
     return *currentConfig;
+}
+
+ConfigEntry* ConfigController::getCurrentConfigRef() const
+{
+    return currentConfig;
 }
 
 QList<ConfigEntry> ConfigController::getConfigEntries() const

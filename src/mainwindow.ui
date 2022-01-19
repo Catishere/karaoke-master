@@ -272,19 +272,6 @@
      <string>Game:</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="updateAccountButton">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>10</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Update account</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="accountLabel">
     <property name="geometry">
      <rect>
@@ -329,19 +316,6 @@
      <string>Team Chat</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="updateYTDL_button">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>170</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Update YTDL</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="loadingLabel">
     <property name="enabled">
      <bool>true</bool>
@@ -368,8 +342,62 @@
      <height>20</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuMenu">
+    <property name="title">
+     <string>Menu</string>
+    </property>
+    <addaction name="actionUpdate_YTDL"/>
+    <addaction name="actionUpdate_account_info"/>
+    <addaction name="actionUpdate_client"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionGuide"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionKey_bindings"/>
+   </widget>
+   <addaction name="menuMenu"/>
+   <addaction name="menuHelp"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionUpdate_YTDL">
+   <property name="text">
+    <string>Update youtube-dl</string>
+   </property>
+  </action>
+  <action name="actionUpdate_account_info">
+   <property name="text">
+    <string>Update account info</string>
+   </property>
+  </action>
+  <action name="actionUpdate_client">
+   <property name="text">
+    <string>Update client</string>
+   </property>
+  </action>
+  <action name="actionGuide">
+   <property name="text">
+    <string>Guide</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionKey_bindings">
+   <property name="text">
+    <string>Key bindings</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -25,12 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    inputdialog.cpp \
         main.cpp \
         mainwindow.cpp \
     configentry.cpp \
     configcontroller.cpp
 
 HEADERS += \
+    inputdialog.h \
         mainwindow.h \
     configentry.h \
     configcontroller.h

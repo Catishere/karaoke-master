@@ -18,6 +18,9 @@
 
 #include "configentry.h"
 #include "configcontroller.h"
+#include "inputdialog.h"
+
+#define VERSION "v1.0.0"
 
 namespace Ui {
 class MainWindow;
@@ -69,15 +72,23 @@ private slots:
 
     void songCooked();
 
-    void downloadFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void downloadFinished(int exitCode);
 
-    void on_dropList_activated(const QString &arg1);
-
-    void on_updateAccountButton_clicked();
+    void on_dropList_activated(const QString &item);
 
     void on_tsayCheckBox_stateChanged(int arg1);
 
-    void on_updateYTDL_button_clicked();
+    void on_actionUpdate_YTDL_triggered();
+
+    void on_actionUpdate_account_info_triggered();
+
+    void on_actionAbout_triggered();
+
+    void on_actionGuide_triggered();
+
+    void on_actionUpdate_client_triggered();
+
+    void on_actionKey_bindings_triggered();
 
 private:
     Ui::MainWindow *ui;

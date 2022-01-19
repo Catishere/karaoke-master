@@ -25,6 +25,7 @@ public:
     void addConfig(const ConfigEntry &configEntry);
     void removeConfig(int index);
     ConfigEntry getCurrentConfig() const;
+    ConfigEntry* getCurrentConfigRef() const;
     QString getUserDataPath() const;
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;

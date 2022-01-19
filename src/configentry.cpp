@@ -1,5 +1,15 @@
 #include "configentry.h"
 
+const QList<QPair<QString, QString> > &ConfigEntry::getKeyBindings() const
+{
+    return keyBindings;
+}
+
+void ConfigEntry::setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings)
+{
+    keyBindings = newKeyBindings;
+}
+
 ConfigEntry::ConfigEntry()
 {}
 
@@ -23,7 +33,7 @@ ConfigEntry::ConfigEntry(QString &path)
     QString game_appid;
     if (file.open(QIODevice::ReadOnly))
     {
-        game_appid = file.readAll();
+        game_appid = file.readLine();
         file.close();
     }
     else
@@ -41,6 +51,11 @@ void ConfigEntry::read(const QJsonObject &json)
     code = json["code"].toString();
     full_name = json["full_name"].toString();
     status = json["status"].toBool();
+
+    keyBindings.empty();
+    for (auto &key : json["keys"].toObject().keys()) {
+        keyBindings.append({key, json["keys"][key].toString()});
+    }
 }
 
 void ConfigEntry::write(QJsonObject &json) const
@@ -50,6 +65,11 @@ void ConfigEntry::write(QJsonObject &json) const
     json["code"] = code;
     json["full_name"] = full_name;
     json["status"] = status;
+    QJsonObject obj;
+    for (auto& key : keyBindings) {
+        obj.insert(key.first, key.second);
+    }
+    json["keys"] = obj;
 }
 
 void ConfigEntry::setStatus(bool status)

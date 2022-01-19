@@ -9,6 +9,8 @@
 #include <QFile>
 #include <QDebug>
 
+typedef QList<QPair<QString, QString>> KeyBindings;
+
 class ConfigEntry
 {
     QString name;
@@ -16,6 +18,7 @@ class ConfigEntry
     QString path;
     QString full_name;
     bool status;
+    KeyBindings keyBindings;
 
 public:
 
@@ -31,6 +34,8 @@ public:
     QString getFullName() const;
     bool getStatus() const;
     void setStatus(bool status);
+    const QList<QPair<QString, QString> > &getKeyBindings() const;
+    void setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings);
 };
 
 #endif // CONFIGENTRY_H
