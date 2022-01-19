@@ -3,6 +3,7 @@
 ConfigController::ConfigController()
 {
     loadConfig();
+    currentConfig = nullptr;
     foreach (const ConfigEntry &configEntry, configEntries)
     {
         if (configEntry.getStatus())

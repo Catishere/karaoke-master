@@ -796,7 +796,12 @@ void MainWindow::on_actionUpdate_client_triggered()
 void MainWindow::on_actionKey_bindings_triggered()
 {
     auto config = configController.getCurrentConfigRef();
+    if (config == nullptr)
+        return;
     auto keys = config->getKeyBindings();
+    if (keys.isEmpty()) {
+        keys.append({{"Voice", "x"},{"Lyrics", "mouse4"}});
+    }
     bool ok;
     KeyBindings list = InputDialog::getStrings(this, keys, &ok);
     if (ok) {
