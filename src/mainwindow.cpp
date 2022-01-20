@@ -791,8 +791,16 @@ void MainWindow::on_actionGuide_triggered()
 
 void MainWindow::on_actionUpdate_client_triggered()
 {
-    qApp->quit();
-    QProcess::startDetached("karaoke-master-update.exe");
+    if (QFileInfo::exists("karaoke-master-update.exe")) {
+        qApp->quit();
+        QProcess::startDetached("karaoke-master-update.exe");
+    } else {
+        QMessageBox box;
+        box.setText("You don't have karaoke-master-update.exe. "
+                    "You can download the package "
+                    "<a href='https://github.com/Catishere/karaoke-master/releases/latest'>here</a>.");
+        box.exec();
+    }
 }
 
 
