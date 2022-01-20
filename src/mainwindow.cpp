@@ -30,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
     root.mkdir("config");
 
     manager = new QNetworkAccessManager();
-    QObject::connect(manager, SIGNAL(finished(QNetworkReply*)),
-        this, SLOT(managerFinished(QNetworkReply*)));
+    connect(manager, &QNetworkAccessManager::finished,
+        this, &MainWindow::managerFinished);
 
     setWindowIcon(QIcon(":/icon/favicon.ico"));
 
@@ -150,7 +150,7 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         else i--;
     }
 
-    QString str = QString("alias song%1lyrics%2 %3 \"---THE END---\";alias spamycs;\n")
+    QString str = QString("alias song%1lyrics%2 %3 \"---THE END---\";\n")
                         .arg(id, QString::number(i), sayType);
     dest.write(str.toUtf8());
 
@@ -236,7 +236,7 @@ void MainWindow::updateConfigSongList()
     auto keys = configController.getCurrentConfig().getKeyBindings();
     QString voice_command;
     QString lyrics_command;
-    for (auto key : keys) {
+    for (auto& key : keys) {
         if (key.first == "Voice")
             voice_command = key.second;
         else if (key.first == "Lyrics")
@@ -266,10 +266,11 @@ void MainWindow::on_startButton_clicked()
     if (ui->startButton->text() == "Start")
     {
         timer = new QTimer(this);
-        connect(timer, SIGNAL(timeout()), this, SLOT(checkConfigFile()));
+        connect(timer, &QTimer::timeout, this, &MainWindow::checkConfigFile);
         timer->start(200);
 
         ui->startButton->setText("Stop");
+        updateConfigSongList();
     }
     else
     {
@@ -282,7 +283,6 @@ void MainWindow::on_startButton_clicked()
         ui->startButton->setText("Start");
         timer->stop();
     }
-    updateConfigSongList();
 }
 
 void MainWindow::on_addSongButton_clicked()
@@ -605,7 +605,8 @@ void MainWindow::songCooked()
     if (success)
     {
         msgbox.setText("Song Downloaded!");
-        updateConfigSongList();
+        QTimer::singleShot(100, this, &MainWindow::on_startButton_clicked);
+        QTimer::singleShot(200, this, &MainWindow::on_startButton_clicked);
     }
     else
         msgbox.setText("Song Failed to download!");
@@ -620,7 +621,7 @@ void MainWindow::downloadFinished(int exitCode)
 {
     dl_file_timer = new QTimer(this);
     dl_file_timer->start(800);
-    connect(dl_file_timer, SIGNAL(timeout()), this, SLOT(songCooked()));
+    connect(dl_file_timer, &QTimer::timeout, this, &MainWindow::songCooked);
 }
 
 void MainWindow::downloadSongYoutube(QString &song_name)
@@ -671,7 +672,9 @@ void MainWindow::loadDropListPaths()
         ui->dropList->addItem(config.getFullName(), config.getName());
     }
 
-    int index = ui->dropList->findData(configController.getCurrentConfig().getName());
+    int index = ui->dropList->findData(configController
+                                       .getCurrentConfig()
+                                       .getName());
     if ( index != -1 ) {
         ui->dropList->setCurrentIndex(index);
     }
