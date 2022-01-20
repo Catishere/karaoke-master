@@ -791,9 +791,8 @@ void MainWindow::on_actionGuide_triggered()
 
 void MainWindow::on_actionUpdate_client_triggered()
 {
-    QMessageBox box;
-    box.setText("Close the program and run karaoke-master-update.exe to update.");
-    box.exec();
+    qApp->quit();
+    QProcess::startDetached("karaoke-master-update.exe");
 }
 
 
