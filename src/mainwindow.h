@@ -90,6 +90,8 @@ private slots:
 
     void on_actionKey_bindings_triggered();
 
+    void showContextMenu(const QPoint &pos);
+
 private:
     Ui::MainWindow *ui;
     QString sayType;

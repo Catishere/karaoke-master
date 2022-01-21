@@ -6,6 +6,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested,
+            this, &MainWindow::showContextMenu);
 
     movie = new QMovie(":/loading.gif");
     ui->loadingLabel->setVisible(false);
@@ -528,8 +532,12 @@ void MainWindow::on_deleteSongButton_clicked()
 
     QList<QTableWidgetItem*> items = ui->tableWidget->selectedItems();
 
-    if (items.size() == 0)
+    if (items.size() == 0) {
+        QMessageBox box(this);
+        box.setText("You haven't selected any songs.");
+        box.exec();
         return;
+    }
 
     QString question_content = QString("Are you sure you want to delete %1 song's lyrics?")
             .arg(QString::number(items.size()/3));
@@ -829,5 +837,24 @@ void MainWindow::on_actionKey_bindings_triggered()
         config->setStringPairList(list);
         configController.saveConfig();
     }
+}
+
+void MainWindow::showContextMenu(const QPoint &pos)
+{
+    QMenu contextMenu(tr("Context menu"), ui->tableWidget);
+
+    QAction action("Delete selected songs", ui->tableWidget);
+    QAction action2("Add song with lyrics", ui->tableWidget);
+    QAction action3("Add song without lyrics", ui->tableWidget);
+    QAction action4("Add song from local folder", ui->tableWidget);
+    connect(&action, &QAction::triggered, this, &MainWindow::on_deleteSongButton_clicked);
+    connect(&action2, &QAction::triggered, this, &MainWindow::on_searchOnlineButton_clicked);
+    connect(&action3, &QAction::triggered, this, &MainWindow::on_youtubeButton_clicked);
+    connect(&action4, &QAction::triggered, this, &MainWindow::on_addSongButton_clicked);
+    contextMenu.addAction(&action);
+    contextMenu.addAction(&action2);
+    contextMenu.addAction(&action3);
+    contextMenu.addAction(&action4);
+    contextMenu.exec(ui->tableWidget->pos() + mapToGlobal(pos) + QPoint(0, 45));
 }
 
