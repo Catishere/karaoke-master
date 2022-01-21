@@ -1,8 +1,11 @@
 #include "inputdialog.h"
 
-InputDialog::InputDialog(QWidget *parent,  KeyBindings inputs)
+InputDialog::InputDialog(QWidget *parent,  StringPairList inputs,
+                         QString title)
     : QDialog(parent)
 {
+    this->bindings = inputs;
+    this->setWindowTitle(title);
     QFormLayout *lytMain = new QFormLayout(this);
     for (auto &item : inputs)
     {
@@ -29,25 +32,20 @@ InputDialog::InputDialog(QWidget *parent,  KeyBindings inputs)
     setLayout(lytMain);
 }
 
-KeyBindings InputDialog::getStrings(QWidget *parent,
-                                    KeyBindings inputs,
-                                    bool *ok)
+StringPairList InputDialog::getStrings(bool *ok)
 {
-    InputDialog *dialog = new InputDialog(parent, inputs);
+    StringPairList list;
 
-    KeyBindings list;
-
-    const int ret = dialog->exec();
+    const int ret = exec();
     *ok = !!ret;
 
     if (ret) {
-        for (int i = 0; i < dialog->fields.size(); i++) {
-            list.append({inputs[i].first, dialog->fields[i]->text()});
+        for (int i = 0; i < fields.size(); i++) {
+            list.append({bindings[i].first, fields[i]->text()});
         }
     }
 
-
-    dialog->deleteLater();
+    deleteLater();
 
     return list;
 }

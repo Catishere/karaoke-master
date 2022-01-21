@@ -88,7 +88,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Add Song</string>
+     <string>Add local song</string>
     </property>
    </widget>
    <widget class="QPushButton" name="refreshButton">
@@ -114,7 +114,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Source CFG</string>
+     <string>Choose config</string>
     </property>
    </widget>
    <widget class="QPushButton" name="startButton">
@@ -220,7 +220,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Delete Song</string>
+     <string>Delete song</string>
     </property>
    </widget>
    <widget class="QPushButton" name="searchOnlineButton">
@@ -233,7 +233,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Search Online</string>
+     <string>Song and lyrics</string>
     </property>
    </widget>
    <widget class="QPushButton" name="youtubeButton">
@@ -246,7 +246,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Youtube DL</string>
+     <string>Only music</string>
     </property>
    </widget>
    <widget class="QComboBox" name="dropList">
@@ -313,7 +313,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Team Chat</string>
+     <string>Team chat</string>
     </property>
    </widget>
    <widget class="QLabel" name="loadingLabel">

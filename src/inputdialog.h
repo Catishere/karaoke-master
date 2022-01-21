@@ -7,7 +7,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 
-typedef QList<QPair<QString, QString>> KeyBindings;
+typedef QList<QPair<QString, QString>> StringPairList;
 
 class QLineEdit;
 class QLabel;
@@ -17,14 +17,14 @@ class InputDialog : public QDialog
     Q_OBJECT
 public:
     explicit InputDialog(QWidget *parent = nullptr,
-                         KeyBindings inputs = KeyBindings());
+                         StringPairList inputs = StringPairList(),
+                         QString title = "InputDialog");
 
-    static KeyBindings getStrings(QWidget *parent,
-                                  KeyBindings inputs,
-                                  bool *ok);
+    StringPairList getStrings(bool *ok);
 
 private:
     QList<QLineEdit*> fields;
+    StringPairList bindings;
 };
 
 #endif // INPUTDIALOG_H

@@ -1,13 +1,13 @@
 #include "configentry.h"
 
-const QList<QPair<QString, QString> > &ConfigEntry::getKeyBindings() const
+const QList<QPair<QString, QString> > &ConfigEntry::getStringPairList() const
 {
     return keyBindings;
 }
 
-void ConfigEntry::setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings)
+void ConfigEntry::setStringPairList(const QList<QPair<QString, QString> > &newStringPairList)
 {
-    keyBindings = newKeyBindings;
+    keyBindings = newStringPairList;
 }
 
 ConfigEntry::ConfigEntry()

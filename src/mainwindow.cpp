@@ -233,7 +233,7 @@ void MainWindow::updateConfigSongList()
     tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
-    auto keys = configController.getCurrentConfig().getKeyBindings();
+    auto keys = configController.getCurrentConfig().getStringPairList();
     QString voice_command;
     QString lyrics_command;
     for (auto& key : keys) {
@@ -772,7 +772,8 @@ void MainWindow::on_actionUpdate_account_info_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox box;
+    QMessageBox box(this);
+    box.setWindowTitle("About");
     box.setText("This is Karaoke master version " VERSION ". Made by Victor G.");
     box.exec();
 }
@@ -780,11 +781,14 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionGuide_triggered()
 {
-    QMessageBox box;
-    box.setText("Press Source CFG and choose your Source game cfg folder to begin.\n"
-                "Type exec lyrics_list in the console to see the current loaded songs.\n"
-                "Use the settings menu to choose which keys you want to bind.\n"
-                "Press Start and become a DJ.");
+    QMessageBox box(this);
+    box.setWindowTitle("Guide");
+    box.setTextFormat(Qt::RichText);
+    box.setText("Press 'Choose config' and choose your game cfg folder to begin.<br>"
+                "Type exec lyrics_list in the console to see the current loaded songs.<br>"
+                "Use the settings menu to choose which keys you want to bind.<br>"
+                "Press Start and become a DJ.<br>More info "
+                "<a href='https://github.com/Catishere/karaoke-master'>here</a>.");
     box.exec();
 }
 
@@ -795,7 +799,7 @@ void MainWindow::on_actionUpdate_client_triggered()
         qApp->quit();
         QProcess::startDetached("karaoke-master-update.exe");
     } else {
-        QMessageBox box;
+        QMessageBox box(this);
         box.setText("You don't have karaoke-master-update.exe. "
                     "You can download the package "
                     "<a href='https://github.com/Catishere/karaoke-master/releases/latest'>here</a>.");
@@ -808,19 +812,21 @@ void MainWindow::on_actionKey_bindings_triggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
-        QMessageBox box;
+        QMessageBox box(this);
+        box.setWindowTitle("Key Bindings");
         box.setText("Choose your source/cfg folder first. (Button Source CFG)");
         box.exec();
         return;
     }
-    auto keys = config->getKeyBindings();
+    auto keys = config->getStringPairList();
     if (keys.isEmpty()) {
         keys.append({{"Voice", "x"},{"Lyrics", "mouse4"}});
     }
     bool ok;
-    KeyBindings list = InputDialog::getStrings(this, keys, &ok);
+    InputDialog id(this, keys, "Key Bindings");
+    StringPairList list = id.getStrings(&ok);
     if (ok) {
-        config->setKeyBindings(list);
+        config->setStringPairList(list);
         configController.saveConfig();
     }
 }
