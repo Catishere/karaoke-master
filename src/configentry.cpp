@@ -1,13 +1,23 @@
 #include "configentry.h"
 
-const QList<QPair<QString, QString> > &ConfigEntry::getStringPairList() const
+const QList<QPair<QString, QString> > &ConfigEntry::getKeyBindings() const
 {
     return keyBindings;
 }
 
-void ConfigEntry::setStringPairList(const QList<QPair<QString, QString> > &newStringPairList)
+void ConfigEntry::setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings)
 {
-    keyBindings = newStringPairList;
+    keyBindings = newKeyBindings;
+}
+
+const QString &ConfigEntry::getPc() const
+{
+    return pc;
+}
+
+void ConfigEntry::setPc(const QString &newPc)
+{
+    pc = newPc;
 }
 
 ConfigEntry::ConfigEntry()
@@ -56,6 +66,7 @@ void ConfigEntry::read(const QJsonObject &json)
     for (auto &key : json["keys"].toObject().keys()) {
         keyBindings.append({key, json["keys"][key].toString()});
     }
+    pc = json["pc"].toString();
 }
 
 void ConfigEntry::write(QJsonObject &json) const
@@ -70,6 +81,7 @@ void ConfigEntry::write(QJsonObject &json) const
         obj.insert(key.first, key.second);
     }
     json["keys"] = obj;
+    json["pc"] = pc;
 }
 
 void ConfigEntry::setStatus(bool status)

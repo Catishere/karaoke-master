@@ -19,6 +19,7 @@ class ConfigEntry
     QString full_name;
     bool status;
     StringPairList keyBindings;
+    QString pc;
 
 public:
 
@@ -34,8 +35,10 @@ public:
     QString getFullName() const;
     bool getStatus() const;
     void setStatus(bool status);
-    const QList<QPair<QString, QString> > &getStringPairList() const;
-    void setStringPairList(const QList<QPair<QString, QString> > &newStringPairList);
+    const QList<QPair<QString, QString> > &getKeyBindings() const;
+    void setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings);
+    const QString &getPc() const;
+    void setPc(const QString &newPc);
 };
 
 #endif // CONFIGENTRY_H

@@ -6,6 +6,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QGroupBox>
+#include <QRadioButton>
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QProcess>
@@ -20,7 +22,7 @@
 #include "configcontroller.h"
 #include "inputdialog.h"
 
-#define VERSION "v1.0.4"
+#define VERSION "v1.0.6"
 
 namespace Ui {
 class MainWindow;
@@ -48,6 +50,7 @@ public:
     void refreshScriptPaths();
     void updateAccount();
     void updateConfigSongList();
+    int getTimerInterval(const QString pc);
     const QStringList getMostRecentUser() const;
 
 private slots:
@@ -92,6 +95,8 @@ private slots:
 
     void showContextMenu(const QPoint &pos);
 
+    void on_actionPerformance_triggered();
+
 private:
     Ui::MainWindow *ui;
     QString sayType;
@@ -106,6 +111,7 @@ private:
     QString dl_file_name;
     QString search_string;
     QNetworkAccessManager *manager;
+    int timer_interval;
 };
 
 #endif // MAINWINDOW_H

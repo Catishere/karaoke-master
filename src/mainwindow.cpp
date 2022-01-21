@@ -27,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     sayType = "say";
+    timer_interval = getTimerInterval(configController
+                                      .getCurrentConfigRef()
+                                      ->getPc());
 
     QDir root(".");
     root.mkdir("lyrics");
@@ -182,14 +185,16 @@ void MainWindow::on_directoryButton_clicked()
                                             QFileDialog::ShowDirsOnly
                                             | QFileDialog::DontResolveSymlinks);
 
-    if (!dir.isEmpty() && QDir(dir).entryList().contains("config.cfg"))
+    if (!dir.isEmpty()
+            && (QDir(dir).dirName() == "cfg"
+                || QDir(dir).entryList().contains("config.cfg")))
     {
         ui->startButton->setEnabled(true);
 
         configController.addConfig(ConfigEntry(dir));
         refreshScriptPaths();
         loadDropListPaths();
-        QTimer::singleShot(200, [=](){updateAccount();});
+        QTimer::singleShot(200, this, [=](){updateAccount();});
     }
     else
     {
@@ -237,7 +242,7 @@ void MainWindow::updateConfigSongList()
     tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
-    auto keys = configController.getCurrentConfig().getStringPairList();
+    auto keys = configController.getCurrentConfigRef()->getKeyBindings();
     QString voice_command;
     QString lyrics_command;
     for (auto& key : keys) {
@@ -265,6 +270,7 @@ void MainWindow::updateConfigSongList()
     tracklist.close();
     dest.close();
 }
+
 void MainWindow::on_startButton_clicked()
 {
     if (ui->startButton->text() == "Start")
@@ -826,7 +832,7 @@ void MainWindow::on_actionKey_bindings_triggered()
         box.exec();
         return;
     }
-    auto keys = config->getStringPairList();
+    auto keys = config->getKeyBindings();
     if (keys.isEmpty()) {
         keys.append({{"Voice", "x"},{"Lyrics", "mouse4"}});
     }
@@ -834,7 +840,7 @@ void MainWindow::on_actionKey_bindings_triggered()
     InputDialog id(this, keys, "Key Bindings");
     StringPairList list = id.getStrings(&ok);
     if (ok) {
-        config->setStringPairList(list);
+        config->setKeyBindings(list);
         configController.saveConfig();
     }
 }
@@ -856,5 +862,66 @@ void MainWindow::showContextMenu(const QPoint &pos)
     contextMenu.addAction(&action3);
     contextMenu.addAction(&action4);
     contextMenu.exec(ui->tableWidget->pos() + mapToGlobal(pos) + QPoint(0, 45));
+}
+
+int MainWindow::getTimerInterval(const QString pc)
+{
+    if (pc == "Potato")
+        return 2000;
+    if (pc == "Slow")
+        return  1000;
+    if (pc ==  "Average")
+        return 500;
+    if (pc == "Fast")
+        return 200;
+    if (pc == "Alien")
+        return 200;
+    return 500;
+}
+
+void MainWindow::on_actionPerformance_triggered()
+{
+    QDialog *dialog = new QDialog(this);
+    QFormLayout *lytMain = new QFormLayout(dialog);\
+    QPushButton *okButton = new QPushButton("&OK", dialog);
+    QPushButton *closeButton = new QPushButton("&Close", dialog);
+
+
+    QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"));
+    QList<QRadioButton *> buttons;
+    buttons.append(new QRadioButton(tr("Potato")));
+    buttons.append(new QRadioButton(tr("Slow")));
+    buttons.append(new QRadioButton(tr("Average")));
+    buttons.append(new QRadioButton(tr("Fast")));
+    buttons.append(new QRadioButton(tr("Alien")));
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QString currentPC = configController.getCurrentConfigRef()->getPc();
+    for (auto button : buttons) {
+        vbox->addWidget(button);
+        if (button->text() == currentPC)
+            button->setChecked(true);
+    }
+    vbox->addStretch(1);
+    groupBox->setLayout(vbox);
+
+    lytMain->addWidget(groupBox);
+    lytMain->addWidget(okButton);
+    lytMain->addWidget(closeButton);
+    dialog->setLayout(lytMain);
+
+    connect(okButton, &QPushButton::pressed, this,
+            [=]()
+    {
+        for(auto& button : buttons) {
+            if (button->isChecked()) {
+                configController.getCurrentConfigRef()->setPc(button->text());
+                configController.saveConfig();
+            }
+        }
+        dialog->close();
+    });
+    connect(closeButton, &QPushButton::pressed, [=]() { dialog->close(); });
+
+    dialog->exec();
 }
 

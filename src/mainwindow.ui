@@ -362,6 +362,7 @@
      <string>Settings</string>
     </property>
     <addaction name="actionKey_bindings"/>
+    <addaction name="actionPerformance"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuHelp"/>
@@ -396,6 +397,11 @@
   <action name="actionKey_bindings">
    <property name="text">
     <string>Key bindings</string>
+   </property>
+  </action>
+  <action name="actionPerformance">
+   <property name="text">
+    <string>Performance</string>
    </property>
   </action>
  </widget>
