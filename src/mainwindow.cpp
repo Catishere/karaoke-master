@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     movie = new QMovie(":/loading.gif");
     ui->loadingLabel->setVisible(false);
-    movie->setScaledSize(QSize(300, 300));
+    movie->setScaledSize(QSize(300, 280));
     ui->loadingLabel->setMovie(movie);
     ui->tableWidget->setColumnWidth(0, 40);
     ui->tableWidget->setColumnWidth(1, 40);
@@ -119,7 +119,8 @@ bool MainWindow::refreshSongList()
 
             ui->tableWidget->setItem(song_pos + i, 0, song_checkbox);
             ui->tableWidget->setItem(song_pos + i, 1, lyrics_checkbox);
-            ui->tableWidget->setItem(song_pos + i, 2, new QTableWidgetItem(name));
+            ui->tableWidget->setItem(song_pos + i, 2,
+                                     new QTableWidgetItem(name));
         }
         else
             song_pos--;
@@ -131,15 +132,18 @@ bool MainWindow::refreshSongList()
 bool MainWindow::createTracklistFile()
 {
     QString list("exec lyricsmaster;\n");
-    list.append("echo \"--------------------------------------------------------\"\n");
-
+    const char* border =
+          "echo \"--------------------------------------------------------\"\n";
+    list.append(border);
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
     {
         QString i_str = QString::number(i + 1);
-        list.append("echo \"song" + i_str + ": " + ui->tableWidget->item(i, 2)->text() + "\"\n");
+        list.append("echo \"song"
+                    + i_str + ": "
+                    + ui->tableWidget->item(i, 2)->text()
+                    + "\"\n");
     }
-
-    list.append("echo \"--------------------------------------------------------\"\n");
+    list.append(border);
 
     tracklist.write(list.toUtf8());
     return true;
@@ -160,8 +164,10 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
         line = line.trimmed();
 
         if (!line.isEmpty()) {
-            QString cfg_line = QString("alias song%1lyrics%2 \"%3 ~ %4 ;alias spamycs song%5lyrics%6\"\n")
-                 .arg(id, QString::number(i), sayType, line, id, QString::number(i + 1));
+            QString cfg_line = QString("alias song%1lyrics%2 \"%3 ~ %4 ;"
+                                       "alias spamycs song%5lyrics%6\"\n")
+                 .arg(id, QString::number(i), sayType, line,
+                      id, QString::number(i + 1));
             dest.write(cfg_line.toUtf8());
         }
 
@@ -179,8 +185,8 @@ bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
     QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
-    QString str = QStringLiteral("alias say_song%2 \"%4 Current"
-                                 " Song: %1\";alias song%2 \"alias spamycs song%2lyrics0;"
+    QString str = QStringLiteral("alias say_song%2 \"%4 Current Song: %1\";"
+                                 "alias song%2 \"alias spamycs song%2lyrics0;"
                                  "bind %3 %2; alias lyrics_current say_song%2;"
                                  "host_writeconfig lyrics_trigger;\n")
                 .arg(songname, id, relay_key, sayType);
@@ -209,7 +215,8 @@ void MainWindow::on_directoryButton_clicked()
     }
     else
     {
-        QMessageBox::warning(this, "Config", "That is not valid source configuration folder.");
+        QMessageBox::warning(this, "Config",
+                             "That is not valid source configuration folder.");
     }
 }
 
@@ -260,19 +267,22 @@ void MainWindow::updateConfigSongList()
         else if (key.first == "Lyrics")
             lyrics_command = key.second;
     }
-    dest.write(QString("alias spamycs say_team \"type exec lyrics_list.cfg in the "
-                      "console to see list with available songs\"\nalias karaoke_play karaoke_play_on\n"
-                      "alias karaoke_play_on \"alias karaoke_play karaoke_play_off;"
-                      " voice_inputfromfile 1; voice_loopback 1; +voicerecord\"\n"
-                      "alias karaoke_play_off \"-voicerecord; voice_inputfromfile 0;"
-                      " voice_loopback 0; alias karaoke_play karaoke_play_on\";"
-                      "bind " + voice_command + " \"karaoke_play\";"
-                      "bind " + lyrics_command + " spamycs\n").toUtf8());
+    dest.write(QString("alias spamycs say_team \"type exec lyrics_list.cfg in "
+                       "the console to see list with available songs\"\nalias "
+                       "karaoke_play karaoke_play_on\nalias karaoke_play_on "
+                       "\"alias karaoke_play karaoke_play_off;"
+                       "voice_inputfromfile 1;voice_loopback 1;+voicerecord\"\n"
+                       "alias karaoke_play_off \"-voicerecord; "
+                       "voice_inputfromfile 0; voice_loopback 0; alias "
+                       "karaoke_play karaoke_play_on\";"
+                       "bind " + voice_command + " \"karaoke_play\";"
+                       "bind " + lyrics_command + " spamycs\n").toUtf8());
     createTracklistFile();
 
     for (int i = 0; i < ui->tableWidget->rowCount(); i++)
     {
-        addSongToConfig(ui->tableWidget->item(i, 2)->text(), QString::number(i + 1));
+        addSongToConfig(ui->tableWidget->item(i, 2)->text(),
+                        QString::number(i + 1));
         createSongIndex(QString::number(i+1));
     }
 
@@ -308,8 +318,10 @@ void MainWindow::on_addSongButton_clicked()
 {
     ui->err->setText("");
 
-    QStringList songs_list = QFileDialog::getOpenFileNames(this, tr("Open Directory"),
-                                                "/", tr("Text Files (*.txt)"));
+    QStringList songs_list = QFileDialog::getOpenFileNames(this,
+                                                   tr("Open Directory"),
+                                                   "/",
+                                                   tr("Text Files (*.txt)"));
     for (int i = 0; i < songs_list.size(); i++)
     {
         QString song = songs_list.at(i);
@@ -354,7 +366,8 @@ void MainWindow::on_deleteSongButton_clicked()
         return;
     }
 
-    QString question_content = QString("Are you sure you want to delete %1 song's lyrics?")
+    QString question_content =
+            QString("Are you sure you want to delete %1 song's lyrics?")
             .arg(QString::number(items.size()/3));
 
     QMessageBox::StandardButton reply;
@@ -380,8 +393,9 @@ void MainWindow::on_searchOnlineButton_clicked()
 {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Online Search"),
-                                        tr("Type song name, artist or part of the song"), QLineEdit::Normal,
-                                        QDir::home().dirName(), &ok);
+                            tr("Type song name, artist or part of the song"),
+                            QLineEdit::Normal,
+                            QDir::home().dirName(), &ok);
     search_string = text;
 
     if (ok && !text.isEmpty())
@@ -463,8 +477,9 @@ void MainWindow::downloadSongYoutube(QString &song_name)
         song_name.replace(QRegularExpression("[%.\\/: ]"), " ");
         search_str = "\"ytsearch: " + song_name + "\"";
     }
-    QString program = "yt-dlp.exe -x --extract-audio --audio-format wav " + search_str + " "
-                      "--ppa \"ffmpeg: -bitexact -ac 1 -ab 352k -ar 22050\"";
+    QString program = "yt-dlp.exe -x --extract-audio --audio-format wav "
+                      + search_str +
+                      " --ppa \"ffmpeg: -bitexact -ac 1 -ab 352k -ar 22050\"";
 
     dl_file_name = song_name;
     timeout_timer = new QTimer(this);
@@ -482,8 +497,9 @@ void MainWindow::on_youtubeButton_clicked()
 {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Youtube download"),
-                                    tr("Type song name or link"), QLineEdit::Normal,
-                                    QDir::home().dirName(), &ok);
+                                         tr("Type song name or link"),
+                                         QLineEdit::Normal,
+                                         QDir::home().dirName(), &ok);
     if (ok && !text.isEmpty())
     {
         downloadSongYoutube(text);
@@ -538,7 +554,9 @@ const QStringList MainWindow::getMostRecentUser() const
 
     QStringList result;
 
-    QString regex_str = "\"(?<steamid64>\\d+)\"\\s+?{\\s+?\"AccountName\"\\s+?\"(?<username>.+?)\".+?\"MostRecent\"\\s+\"(?<mostrecent>\\d)\".+?}";
+    QString regex_str = "\"(?<steamid64>\\d+)\"\\s+?{\\s+?\"AccountName\"\\"
+                        "s+?\"(?<username>.+?)\".+?\"MostRecent\"\\"
+                        "s+\"(?<mostrecent>\\d)\".+?}";
     QRegularExpression regex = QRegularExpression( regex_str,
                                QRegularExpression::DotMatchesEverythingOption);
 
@@ -603,11 +621,12 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionGuide_triggered()
 {
-    QMessageBox::information(this, "Guide", "Press 'Choose config' and choose your game cfg folder to begin.<br>"
-                                            "Type exec lyrics_list in the console to see the current loaded songs.<br>"
-                                            "Use the settings menu to choose which keys you want to bind.<br>"
-                                            "Press Start and become a DJ.<br>More info "
-                                            "<a href='https://github.com/Catishere/karaoke-master'>here</a>.");
+    QMessageBox::information(this, "Guide",
+    "Press 'Choose config' and choose your game cfg folder to begin.<br>"
+    "Type exec lyrics_list in the console to see the current loaded songs.<br>"
+    "Use the settings menu to choose which keys you want to bind.<br>"
+    "Press Start and become a DJ.<br>More info "
+    "<a href='https://github.com/Catishere/karaoke-master'>here</a>.");
 }
 
 void MainWindow::on_actionUpdate_client_triggered()
@@ -616,9 +635,11 @@ void MainWindow::on_actionUpdate_client_triggered()
         qApp->quit();
         QProcess::startDetached("karaoke-master-update.exe");
     } else {
-        QMessageBox::information(this, "Update", "You don't have karaoke-master-update.exe. "
-                    "You can download the package "
-                    "<a href='https://github.com/Catishere/karaoke-master/releases/latest'>here</a>.");
+        QMessageBox::information(this, "Update",
+            "You don't have karaoke-master-update.exe. "
+            "You can download the package "
+            "<a href='https://github.com/Catishere/karaoke-master/"
+            "releases/latest'>here</a>.");
     }
 }
 
@@ -627,7 +648,8 @@ void MainWindow::on_actionKey_bindings_triggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
-        QMessageBox::warning(this, "Key bindings", "Choose your game cfg folder first.");
+        QMessageBox::warning(this, "Key bindings",
+                             "Choose your game cfg folder first.");
         return;
     }
 
@@ -689,15 +711,20 @@ void MainWindow::on_actionPerformance_triggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
-        QMessageBox::warning(this, "Performance", "Choose your game cfg folder first.");
+        QMessageBox::warning(this, "Performance",
+                             "Choose your game cfg folder first.");
         return;
     }
 
     QDialog *dialog = new QDialog(this);
-    QFormLayout *lytMain = new QFormLayout(dialog);
+
+    QVBoxLayout *lytMain = new QVBoxLayout(dialog);
+    QHBoxLayout *hbox = new QHBoxLayout(dialog);
+
     QPushButton *okButton = new QPushButton("&OK", dialog);
     QPushButton *closeButton = new QPushButton("&Close", dialog);
 
+    QCheckBox *checkbox = new QCheckBox("Always download song", this);
     QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"));
     QList<QRadioButton *> buttons;
     buttons.append(new QRadioButton(tr("Potato")));
@@ -705,17 +732,20 @@ void MainWindow::on_actionPerformance_triggered()
     buttons.append(new QRadioButton(tr("Average")));
     buttons.append(new QRadioButton(tr("Fast")));
     buttons.append(new QRadioButton(tr("Alien")));
-    QVBoxLayout *vbox = new QVBoxLayout;
+
     QString currentPC = config->getPc();
+    checkbox->setChecked(config->getAlwaysDownload());
+
     for (auto button : buttons) {
-        vbox->addWidget(button);
+        hbox->addWidget(button);
         if (button->text() == currentPC)
             button->setChecked(true);
     }
-    vbox->addStretch(1);
-    groupBox->setLayout(vbox);
 
+    hbox->addStretch(1);
+    groupBox->setLayout(hbox);
     lytMain->addWidget(groupBox);
+    lytMain->addWidget(checkbox);
     lytMain->addWidget(okButton);
     lytMain->addWidget(closeButton);
     dialog->setLayout(lytMain);
@@ -723,7 +753,8 @@ void MainWindow::on_actionPerformance_triggered()
     connect(okButton, &QPushButton::pressed, this,
             [=]()
     {
-        for(auto& button : buttons) {
+        config->setAlwaysDownload(checkbox->isChecked());
+        for (auto& button : buttons) {
             if (button->isChecked()) {
                 config->setPc(button->text());
                 configController.saveConfig();
@@ -739,7 +770,8 @@ void MainWindow::on_actionPerformance_triggered()
 void MainWindow::lyricsListFetched(StringPairList list)
 {
     if (list.isEmpty()) {
-        QMessageBox::information(this, "Lyrics", "Couldn't find these lyrics online!");
+        QMessageBox::information(this, "Lyrics",
+                                 "Couldn't find these lyrics online!");
         return;
     }
 
@@ -760,7 +792,7 @@ void MainWindow::lyricsListFetched(StringPairList list)
     if (ok && !item.isEmpty())
     {
         if (!temp_lyrics_name.isEmpty()) {
-            ui->err->setText("Downloading aborted. Another download in progress.");
+            ui->err->setText("Aborted. Another download in progress.");
             return;
         }
 
@@ -770,11 +802,9 @@ void MainWindow::lyricsListFetched(StringPairList list)
             fetcher->fetchLyrics(links.at(items.indexOf(item)));
         }
 
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Download song?","Download song?",
-                                      QMessageBox::Yes|QMessageBox::No);
-
-        if (reply == QMessageBox::Yes)
+        if (configController.getCurrentConfigRef()->getAlwaysDownload()
+            || QMessageBox::question(this, "Download song?","Download song?",
+                       QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
             downloadSongYoutube(item);
     }
 }
@@ -802,57 +832,6 @@ void MainWindow::lyricsFetched(const QString& lyrics)
     temp_lyrics_name = "";
 }
 
-
-void MainWindow::on_actionOptions_triggered()
-{
-    auto config = configController.getCurrentConfigRef();
-    if (config == nullptr) {
-        QMessageBox::warning(this, "Options", "Choose your game cfg folder first.");
-        return;
-    }
-
-    QDialog *dialog = new QDialog(this);
-    QFormLayout *lytMain = new QFormLayout(dialog);
-    QPushButton *okButton = new QPushButton("&OK", dialog);
-    QPushButton *closeButton = new QPushButton("&Close", dialog);
-
-    QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"));
-    QList<QRadioButton *> buttons;
-    buttons.append(new QRadioButton(tr("Potato")));
-    buttons.append(new QRadioButton(tr("Slow")));
-    buttons.append(new QRadioButton(tr("Average")));
-    buttons.append(new QRadioButton(tr("Fast")));
-    buttons.append(new QRadioButton(tr("Alien")));
-    QVBoxLayout *vbox = new QVBoxLayout;
-    QString currentPC = config->getPc();
-    for (auto button : buttons) {
-        vbox->addWidget(button);
-        if (button->text() == currentPC)
-            button->setChecked(true);
-    }
-    vbox->addStretch(2);
-    groupBox->setLayout(vbox);
-
-    lytMain->addWidget(groupBox);
-    lytMain->addWidget(okButton);
-    lytMain->addWidget(closeButton);
-    dialog->setLayout(lytMain);
-
-    connect(okButton, &QPushButton::pressed, this,
-            [=]()
-    {
-        for(auto& button : buttons) {
-            if (button->isChecked()) {
-                config->setPc(button->text());
-                configController.saveConfig();
-            }
-        }
-        dialog->close();
-    });
-    connect(closeButton, &QPushButton::pressed, [=]() { dialog->close(); });
-
-    dialog->exec();
-}
 
 void MainWindow::downloadProgress(qint64 ist, qint64 max)
 {

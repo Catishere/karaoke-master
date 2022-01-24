@@ -53,53 +53,29 @@ public:
 
 private slots:
 
-    void on_directoryButton_clicked();
-
-    void on_refreshButton_clicked();
-
-    void on_startButton_clicked();
-
-    void on_addSongButton_clicked();
-
-    void on_deleteSongButton_clicked();
-
-    void on_searchOnlineButton_clicked();
-
-    void on_youtubeButton_clicked();
-
     void checkConfigFile();
-
     void songCooked();
-
     void downloadFinished(int exitCode);
-
-    void on_dropList_activated(const QString &item);
-
-    void on_tsayCheckBox_stateChanged(int arg1);
-
-    void on_actionUpdate_YTDL_triggered();
-
-    void on_actionUpdate_account_info_triggered();
-
-    void on_actionAbout_triggered();
-
-    void on_actionGuide_triggered();
-
-    void on_actionUpdate_client_triggered();
-
-    void on_actionKey_bindings_triggered();
-
     void showContextMenu(const QPoint &pos);
-
-    void on_actionPerformance_triggered();
-
     void lyricsListFetched(StringPairList list);
-
     void lyricsFetched(const QString& lyrics);
-
-    void on_actionOptions_triggered();
-
     void downloadProgress(qint64 ist, qint64 max);
+    void on_directoryButton_clicked();
+    void on_refreshButton_clicked();
+    void on_startButton_clicked();
+    void on_addSongButton_clicked();
+    void on_deleteSongButton_clicked();
+    void on_searchOnlineButton_clicked();
+    void on_youtubeButton_clicked();
+    void on_dropList_activated(const QString &item);
+    void on_tsayCheckBox_stateChanged(int arg1);
+    void on_actionUpdate_YTDL_triggered();
+    void on_actionUpdate_account_info_triggered();
+    void on_actionAbout_triggered();
+    void on_actionGuide_triggered();
+    void on_actionUpdate_client_triggered();
+    void on_actionKey_bindings_triggered();
+    void on_actionPerformance_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -20,6 +20,16 @@ void ConfigEntry::setPc(const QString &newPc)
     pc = newPc;
 }
 
+bool ConfigEntry::getAlwaysDownload() const
+{
+    return alwaysDownload;
+}
+
+void ConfigEntry::setAlwaysDownload(bool newAlwaysDownload)
+{
+    alwaysDownload = newAlwaysDownload;
+}
+
 ConfigEntry::ConfigEntry()
 {}
 
@@ -52,6 +62,8 @@ ConfigEntry::ConfigEntry(QString &path)
     this->code = game_appid.trimmed();
     this->path = path;
     this->status = false;
+    this->alwaysDownload = false;
+    this->pc = "Average";
 }
 
 void ConfigEntry::read(const QJsonObject &json)
@@ -67,6 +79,7 @@ void ConfigEntry::read(const QJsonObject &json)
         keyBindings.append({key, json["keys"][key].toString()});
     }
     pc = json["pc"].toString();
+    alwaysDownload = json["always_download"].toBool();
 }
 
 void ConfigEntry::write(QJsonObject &json) const
@@ -82,6 +95,7 @@ void ConfigEntry::write(QJsonObject &json) const
     }
     json["keys"] = obj;
     json["pc"] = pc;
+    json["always_download"] = alwaysDownload;
 }
 
 void ConfigEntry::setStatus(bool status)

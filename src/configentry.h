@@ -20,6 +20,7 @@ class ConfigEntry
     bool status;
     StringPairList keyBindings;
     QString pc;
+    bool alwaysDownload;
 
 public:
 
@@ -39,6 +40,8 @@ public:
     void setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings);
     const QString &getPc() const;
     void setPc(const QString &newPc);
+    bool getAlwaysDownload() const;
+    void setAlwaysDownload(bool newAlwaysDownload);
 };
 
 #endif // CONFIGENTRY_H
