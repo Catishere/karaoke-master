@@ -25,17 +25,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    geniuslyricsfetcher.cpp \
     inputdialog.cpp \
         main.cpp \
         mainwindow.cpp \
     configentry.cpp \
-    configcontroller.cpp
+    configcontroller.cpp \
+    updatemanager.cpp
 
 HEADERS += \
+    geniuslyricsfetcher.h \
     inputdialog.h \
+    lyricsfetcher.h \
         mainwindow.h \
     configentry.h \
-    configcontroller.h
+    configcontroller.h \
+    updatemanager.h
 
 FORMS += \
         mainwindow.ui

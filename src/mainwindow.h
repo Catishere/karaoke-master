@@ -14,13 +14,14 @@
 #include <QMovie>
 #include <QDebug>
 #include <QTimer>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 
 #include "configentry.h"
 #include "configcontroller.h"
 #include "inputdialog.h"
+#include "geniuslyricsfetcher.h"
+#include "lyricsfetcher.h"
+#include "updatemanager.h"
 
 #define VERSION "v1.0.6"
 
@@ -40,10 +41,7 @@ public:
     bool createSongIndex(const QString &id);
     bool refreshSongList();
     void getPage(const QString &url);
-    bool handleLyricsReply(QNetworkReply *reply);
-    QString getGeniusSongName(const QString &page);
-    void handleLyricsSearchReply(QNetworkReply *reply);
-    bool handleYTDLUpdate(QNetworkReply *reply);
+    void handleYTDLUpdateResponse(Response response);
     void downloadSongYoutube(QString &song_name);
     void loadSong(int songid);
     void loadDropListPaths();
@@ -64,8 +62,6 @@ private slots:
     void on_addSongButton_clicked();
 
     void on_deleteSongButton_clicked();
-
-    void managerFinished(QNetworkReply *reply);
 
     void on_searchOnlineButton_clicked();
 
@@ -97,6 +93,14 @@ private slots:
 
     void on_actionPerformance_triggered();
 
+    void lyricsListFetched(StringPairList list);
+
+    void lyricsFetched(const QString& lyrics);
+
+    void on_actionOptions_triggered();
+
+    void downloadProgress(qint64 ist, qint64 max);
+
 private:
     Ui::MainWindow *ui;
     QString sayType;
@@ -110,7 +114,8 @@ private:
     QTimer* dl_file_timer;
     QString dl_file_name;
     QString search_string;
-    QNetworkAccessManager *manager;
+    UpdateManager *updateManager;
+    QList<LyricsFetcher*> lyrics_fetchers;
     int timer_interval;
 };
 
