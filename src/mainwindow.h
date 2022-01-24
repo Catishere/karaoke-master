@@ -23,7 +23,7 @@
 #include "lyricsfetcher.h"
 #include "updatemanager.h"
 
-#define VERSION "v1.0.6"
+#define VERSION "v1.1.0"
 
 namespace Ui {
 class MainWindow;
