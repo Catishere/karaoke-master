@@ -28,18 +28,20 @@ MainWindow::MainWindow(QWidget *parent) :
         loadDropListPaths();
     }
 
+    fetchers_ready = 0;
     sayType = "say";
     auto currentConfig = configController.getCurrentConfigRef();
     timer_interval = (currentConfig) ? getTimerInterval(currentConfig->getPc()):
                                        200;
-    auto glf = new GeniusLyricsFetcher(this);
-    lyrics_fetchers.append(glf);
+    lyrics_fetchers.append(new GeniusLyricsFetcher(this));
+    lyrics_fetchers.append(new LyricstranslateFetcher(this));
 
-    connect(dynamic_cast<QObject*>(glf), SIGNAL(listReady(StringPairList)),
-            this, SLOT(lyricsListFetched(StringPairList)));
-
-    connect(dynamic_cast<QObject*>(glf), SIGNAL(lyricsReady(QString)),
-            this, SLOT(lyricsFetched(QString)));
+    for (auto& fet : lyrics_fetchers) {
+        connect(dynamic_cast<QObject*>(fet), SIGNAL(listReady(StringPairList)),
+                this, SLOT(lyricsListFetched(StringPairList)));
+        connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
+                this, SLOT(lyricsFetched(QString)));
+    }
 
     QDir root(".");
     root.mkdir("lyrics");
@@ -53,6 +55,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, &MainWindow::downloadProgress);
 
     setWindowIcon(QIcon(":/icon/favicon.ico"));
+
+    qDebug() << QSysInfo::machineUniqueId();
 
     refreshSongList();
 }
@@ -767,9 +771,11 @@ void MainWindow::on_actionPerformance_triggered()
     dialog->exec();
 }
 
-void MainWindow::lyricsListFetched(StringPairList list)
+void MainWindow::allLyricsListsFetched()
 {
-    if (list.isEmpty()) {
+    fetchers_ready = 0;
+
+    if (search_list.isEmpty()) {
         QMessageBox::information(this, "Lyrics",
                                  "Couldn't find these lyrics online!");
         return;
@@ -781,10 +787,12 @@ void MainWindow::lyricsListFetched(StringPairList list)
     QStringList items;
     QStringList links;
 
-    for (auto& result : list) {
+    for (auto& result : search_list) {
         items.append(result.first);
         links.append(result.second);
     }
+
+    search_list.clear();
 
     QString item = QInputDialog::getItem(this, tr("Choose your song"),
                                                contentbox,
@@ -807,6 +815,27 @@ void MainWindow::lyricsListFetched(StringPairList list)
                        QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
             downloadSongYoutube(item);
     }
+}
+
+void MainWindow::addListWithPriorty(const StringPairList &list)
+{
+    if (list.isEmpty())
+        return;
+    if (list.at(0).second.startsWith("https://genius.com")) {
+        StringPairList copy(list);
+        copy.append(search_list);
+        search_list = copy;
+    } else if (list.at(0).second.startsWith("https://lyricstranslate.com")) {
+        search_list.append(list);
+    }
+}
+
+void MainWindow::lyricsListFetched(const StringPairList &list)
+{
+    addListWithPriorty(list);
+    fetchers_ready++;
+    if (fetchers_ready >= lyrics_fetchers.size())
+        allLyricsListsFetched();
 }
 
 void MainWindow::lyricsFetched(const QString& lyrics)

@@ -1,15 +1,18 @@
-#ifndef GENIUSLYRICSFETCHER_H
-#define GENIUSLYRICSFETCHER_H
+#ifndef LYRICSTRANSLATEFETCHER_H
+#define LYRICSTRANSLATEFETCHER_H
 
 #include <QObject>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
 #include "lyricsfetcher.h"
 
-class GeniusLyricsFetcher : public QObject, public LyricsFetcher
+class LyricstranslateFetcher : public QObject, public LyricsFetcher
 {
     Q_OBJECT
     Q_INTERFACES(LyricsFetcher)
 public:
-    explicit GeniusLyricsFetcher(QObject *parent = nullptr);
+    explicit LyricstranslateFetcher(QObject *parent = nullptr);
     void fetchLyrics(const QString link) override;
     void fetchList(const QString songTitle) override;
 signals:
@@ -19,6 +22,6 @@ signals:
 private slots:
     void lyricsFetched(QNetworkReply *reply) override;
     void listFetched(QNetworkReply *reply) override;
-    };
+};
 
-#endif // GENIUSLYRICSFETCHER_H
+#endif // LYRICSTRANSLATEFETCHER_H

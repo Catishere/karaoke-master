@@ -74,7 +74,7 @@ void ConfigEntry::read(const QJsonObject &json)
     full_name = json["full_name"].toString();
     status = json["status"].toBool();
 
-    keyBindings.empty();
+    keyBindings.clear();
     for (auto &key : json["keys"].toObject().keys()) {
         keyBindings.append({key, json["keys"][key].toString()});
     }

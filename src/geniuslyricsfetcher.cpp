@@ -8,7 +8,7 @@ GeniusLyricsFetcher::GeniusLyricsFetcher(QObject *parent) : QObject(parent)
 
 void GeniusLyricsFetcher::fetchLyrics(QString link)
 {
-    qDebug() << "Fetching lyrics...";
+    qDebug() << "Genius fetching lyrics...";
     if (!link.startsWith(endpoint)) return;
 
     QNetworkRequest request;
@@ -21,7 +21,7 @@ void GeniusLyricsFetcher::fetchLyrics(QString link)
 
 void GeniusLyricsFetcher::fetchList(const QString songTitle)
 {
-    qDebug() << "Fetching list...";
+    qDebug() << "Genius fetching list...";
     QNetworkRequest request;
     request.setUrl(QUrl("https://genius.com/api/search/song?page=1&q="
                         + songTitle));
@@ -33,7 +33,7 @@ void GeniusLyricsFetcher::fetchList(const QString songTitle)
 
 void GeniusLyricsFetcher::lyricsFetched(QNetworkReply *reply)
 {
-    qDebug() << "Lyrics fetched!";
+    qDebug() << "Genius lyrics fetched!";
     QString lyrics;
     QByteArray page = reply->readAll();
 
@@ -62,7 +62,7 @@ void GeniusLyricsFetcher::lyricsFetched(QNetworkReply *reply)
 
 void GeniusLyricsFetcher::listFetched(QNetworkReply *reply)
 {
-    qDebug() << "List fetched!";
+    qDebug() << "Genius list fetched!";
     QString regex_str;
     QString contentbox;
     StringPairList list;

@@ -21,6 +21,7 @@
 #include "inputdialog.h"
 #include "geniuslyricsfetcher.h"
 #include "lyricsfetcher.h"
+#include "lyricstranslatefetcher.h"
 #include "updatemanager.h"
 
 #define VERSION "v1.1.0"
@@ -51,15 +52,20 @@ public:
     int getTimerInterval(const QString pc);
     const QStringList getMostRecentUser() const;
 
+private:
+    void allLyricsListsFetched();
+    void addListWithPriorty(const StringPairList &list);
+
 private slots:
 
     void checkConfigFile();
     void songCooked();
     void downloadFinished(int exitCode);
     void showContextMenu(const QPoint &pos);
-    void lyricsListFetched(StringPairList list);
+    void lyricsListFetched(const StringPairList& list);
     void lyricsFetched(const QString& lyrics);
     void downloadProgress(qint64 ist, qint64 max);
+
     void on_directoryButton_clicked();
     void on_refreshButton_clicked();
     void on_startButton_clicked();
@@ -79,19 +85,21 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QString sayType;
     ConfigController configController;
+    UpdateManager *updateManager;
+    QString sayType;
     QString temp_lyrics_name;
+    QString dl_file_name;
+    QString search_string;
+    StringPairList search_list;
     QFile tracklist;
     QFile dest;
-    QMovie *movie;
     QTimer* timer;
     QTimer* timeout_timer;
     QTimer* dl_file_timer;
-    QString dl_file_name;
-    QString search_string;
-    UpdateManager *updateManager;
+    QMovie *movie;
     QList<LyricsFetcher*> lyrics_fetchers;
+    int fetchers_ready;
     int timer_interval;
 };
 

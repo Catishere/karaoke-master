@@ -27,6 +27,7 @@ CONFIG += c++11
 SOURCES += \
     geniuslyricsfetcher.cpp \
     inputdialog.cpp \
+    lyricstranslatefetcher.cpp \
         main.cpp \
         mainwindow.cpp \
     configentry.cpp \
@@ -37,6 +38,7 @@ HEADERS += \
     geniuslyricsfetcher.h \
     inputdialog.h \
     lyricsfetcher.h \
+    lyricstranslatefetcher.h \
         mainwindow.h \
     configentry.h \
     configcontroller.h \
