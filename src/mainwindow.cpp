@@ -781,40 +781,53 @@ void MainWindow::allLyricsListsFetched()
         return;
     }
 
-    bool ok;
+    QDialog *dialog = new QDialog(this);
+    QGridLayout *layout = new QGridLayout(dialog);
+    auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
+                                          | QDialogButtonBox::Cancel);
+    auto comboBox = new QComboBox(dialog);
 
-    QString contentbox = "Choose a song:";
-    QStringList items;
-    QStringList links;
-
-    for (auto& result : search_list) {
-        items.append(result.first);
-        links.append(result.second);
+    for (auto &pair : search_list) {
+        comboBox->addItem(QIcon(":icon/" + pair.first.right(2) + ".ico"),
+                          pair.first.chopped(2));
     }
 
-    search_list.clear();
+    layout->addWidget(comboBox);
+    layout->addWidget(buttonBox);
+    dialog->setLayout(layout);
 
-    QString item = QInputDialog::getItem(this, tr("Choose your song"),
-                                               contentbox,
-                                               items, 0, false, &ok);
-    if (ok && !item.isEmpty())
-    {
-        if (!temp_lyrics_name.isEmpty()) {
-            ui->err->setText("Aborted. Another download in progress.");
-            return;
+    connect(buttonBox, &QDialogButtonBox::accepted, this, [=](){
+        QString item = comboBox->currentText();
+        if (!item.isEmpty())
+        {
+            if (!temp_lyrics_name.isEmpty()) {
+                ui->err->setText("Aborted. Another download in progress.");
+                return;
+            }
+
+            temp_lyrics_name = item;
+
+            for (auto &fetcher : lyrics_fetchers) {
+                fetcher->fetchLyrics(search_list
+                                     .at(comboBox->findText(item))
+                                     .second);
+            }
+
+            search_list.clear();
+
+            if (configController.getCurrentConfigRef()->getAlwaysDownload()
+                || QMessageBox::question(this,"Download song?","Download song?",
+                   QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+                downloadSongYoutube(item);
         }
+        dialog->close();
+    });
 
-        temp_lyrics_name = item;
+    connect(buttonBox, &QDialogButtonBox::rejected, this, [=](){
+        dialog->close();
+    });
 
-        for (auto &fetcher : lyrics_fetchers) {
-            fetcher->fetchLyrics(links.at(items.indexOf(item)));
-        }
-
-        if (configController.getCurrentConfigRef()->getAlwaysDownload()
-            || QMessageBox::question(this, "Download song?","Download song?",
-                       QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
-            downloadSongYoutube(item);
-    }
+    dialog->exec();
 }
 
 void MainWindow::addListWithPriorty(const StringPairList &list)

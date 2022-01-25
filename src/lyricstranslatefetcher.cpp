@@ -3,6 +3,8 @@
 LyricstranslateFetcher::LyricstranslateFetcher(QObject *parent) : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
+    endpoint = "https://lyricstranslate.com";
+    id = "LT";
 }
 
 void LyricstranslateFetcher::fetchLyrics(const QString link)
@@ -21,7 +23,6 @@ void LyricstranslateFetcher::fetchLyrics(const QString link)
 void LyricstranslateFetcher::fetchList(const QString songTitle)
 {
     qDebug() << "LT fetching list...";
-    endpoint = "https://lyricstranslate.com";
     QNetworkRequest req;
     req.setUrl(QUrl("https://cse.google.com/cse/element/v1?"
                     "&hl=en"
@@ -44,6 +45,7 @@ void LyricstranslateFetcher::lyricsFetched(QNetworkReply *reply)
     QByteArray page = reply->readAll();
 
     int start = page.indexOf("<div id=\"song-body\"");
+    if (start < 0) return;
     int end = page.indexOf("<div id=\"song-transliteration\"", start);
 
     lyrics = page.mid(start, end - start);
@@ -72,16 +74,17 @@ void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     qsizetype start = data.indexOf('{');
     data = data.mid(start, data.size() - start - 2);
+
     QJsonDocument doc(QJsonDocument::fromJson(data));
     const QJsonValue results = doc["results"];
+
     if (!results.isNull()) {
         for (auto&& result : results.toArray()) {
             auto item = result.toObject().value("titleNoFormatting").toString();
-            qsizetype index = item.lastIndexOf("lyrics");
+            qsizetype index = item.lastIndexOf(" lyrics");
             if (index > 0) item.truncate(index);
-            item.append(" LT");
             auto link = result.toObject().value("unescapedUrl").toString();
-
+            item = item.append(id).trimmed();
             bool dub = false;
             for (auto& e : list) {
                 if (e.first == item)
@@ -91,6 +94,7 @@ void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
                 list.append({item, link});
         }
     }
+
     emit listReady(list);
     reply->deleteLater();
 }

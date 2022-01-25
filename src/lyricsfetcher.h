@@ -21,6 +21,7 @@ public:
 protected:
     QNetworkAccessManager *manager;
     QString endpoint;
+    QString id;
 
 signals:
     virtual void lyricsReady(const QString& lyrics) = 0;

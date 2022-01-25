@@ -4,6 +4,7 @@ GeniusLyricsFetcher::GeniusLyricsFetcher(QObject *parent) : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
     endpoint = "https://genius.com";
+    id = "GE";
 }
 
 void GeniusLyricsFetcher::fetchLyrics(QString link)
@@ -82,7 +83,8 @@ void GeniusLyricsFetcher::listFetched(QNetworkReply *reply)
         QString song = match.captured("song");
         QString artist = match.captured("artist");
 
-        list.append({QString(artist + " - " + song), QString(link)});
+        list.append({ QString("%1 - %2%3")
+                     .arg(artist, song, id), QString(link)});
     }
     emit listReady(list);
     reply->deleteLater();

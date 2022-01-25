@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>icon/favicon.ico</file>
         <file>loading.gif</file>
+        <file>icon/LT.ico</file>
+        <file>icon/GE.ico</file>
     </qresource>
 </RCC>
