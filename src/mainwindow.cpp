@@ -526,12 +526,6 @@ void MainWindow::loadDropListPaths()
     }
 }
 
-void MainWindow::on_dropList_activated(const QString &item)
-{
-    configController.choose(item);
-    refreshScriptPaths();
-}
-
 void MainWindow::refreshScriptPaths()
 {
     ConfigEntry config = configController.getCurrentConfig();
@@ -711,11 +705,11 @@ int MainWindow::getTimerInterval(const QString pc)
     return 500;
 }
 
-void MainWindow::on_actionPerformance_triggered()
+void MainWindow::on_actionOptions_triggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
-        QMessageBox::warning(this, "Performance",
+        QMessageBox::warning(this, "Options",
                              "Choose your game cfg folder first.");
         return;
     }
@@ -723,19 +717,19 @@ void MainWindow::on_actionPerformance_triggered()
     QDialog *dialog = new QDialog(this);
 
     QVBoxLayout *lytMain = new QVBoxLayout(dialog);
-    QHBoxLayout *hbox = new QHBoxLayout(dialog);
+    QHBoxLayout *hbox = new QHBoxLayout();
 
-    QPushButton *okButton = new QPushButton("&OK", dialog);
-    QPushButton *closeButton = new QPushButton("&Close", dialog);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
+                                                       QDialogButtonBox::Close);
 
-    QCheckBox *checkbox = new QCheckBox("Always download song", this);
-    QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"));
+    QCheckBox *checkbox = new QCheckBox("Always download song", dialog);
+    QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"), dialog);
     QList<QRadioButton *> buttons;
-    buttons.append(new QRadioButton(tr("Potato")));
-    buttons.append(new QRadioButton(tr("Slow")));
-    buttons.append(new QRadioButton(tr("Average")));
-    buttons.append(new QRadioButton(tr("Fast")));
-    buttons.append(new QRadioButton(tr("Alien")));
+    buttons.append(new QRadioButton(tr("Potato"), dialog));
+    buttons.append(new QRadioButton(tr("Slow"), dialog));
+    buttons.append(new QRadioButton(tr("Average"), dialog));
+    buttons.append(new QRadioButton(tr("Fast"), dialog));
+    buttons.append(new QRadioButton(tr("Alien"), dialog));
 
     QString currentPC = config->getPc();
     checkbox->setChecked(config->getAlwaysDownload());
@@ -750,13 +744,11 @@ void MainWindow::on_actionPerformance_triggered()
     groupBox->setLayout(hbox);
     lytMain->addWidget(groupBox);
     lytMain->addWidget(checkbox);
-    lytMain->addWidget(okButton);
-    lytMain->addWidget(closeButton);
+    lytMain->addWidget(buttonBox);
+    dialog->setWindowTitle("Options");
     dialog->setLayout(lytMain);
 
-    connect(okButton, &QPushButton::pressed, this,
-            [=]()
-    {
+    connect(buttonBox, &QDialogButtonBox::accepted, this, [=]() {
         config->setAlwaysDownload(checkbox->isChecked());
         for (auto& button : buttons) {
             if (button->isChecked()) {
@@ -766,7 +758,9 @@ void MainWindow::on_actionPerformance_triggered()
         }
         dialog->close();
     });
-    connect(closeButton, &QPushButton::pressed, [=]() { dialog->close(); });
+
+    connect(buttonBox, &QDialogButtonBox::rejected,
+            this, [=]() { dialog->close(); });
 
     dialog->exec();
 }
@@ -794,6 +788,7 @@ void MainWindow::allLyricsListsFetched()
 
     layout->addWidget(comboBox);
     layout->addWidget(buttonBox);
+    dialog->setWindowTitle("Online Search");
     dialog->setLayout(layout);
 
     connect(buttonBox, &QDialogButtonBox::accepted, this, [=](){
@@ -881,5 +876,12 @@ void MainWindow::downloadProgress(qint64 ist, qint64 max)
     ui->progressBar->setRange(0, max);
     ui->progressBar->setValue(ist);
     if(max < 0) ui->progressBar->setVisible(false);
+}
+
+
+void MainWindow::on_dropList_textActivated(const QString &arg1)
+{
+    configController.choose(arg1);
+    refreshScriptPaths();
 }
 

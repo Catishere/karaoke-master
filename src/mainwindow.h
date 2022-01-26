@@ -73,7 +73,7 @@ private slots:
     void on_deleteSongButton_clicked();
     void on_searchOnlineButton_clicked();
     void on_youtubeButton_clicked();
-    void on_dropList_activated(const QString &item);
+    void on_dropList_textActivated(const QString &arg1);
     void on_tsayCheckBox_stateChanged(int arg1);
     void on_actionUpdate_YTDL_triggered();
     void on_actionUpdate_account_info_triggered();
@@ -81,7 +81,7 @@ private slots:
     void on_actionGuide_triggered();
     void on_actionUpdate_client_triggered();
     void on_actionKey_bindings_triggered();
-    void on_actionPerformance_triggered();
+    void on_actionOptions_triggered();
 
 private:
     Ui::MainWindow *ui;

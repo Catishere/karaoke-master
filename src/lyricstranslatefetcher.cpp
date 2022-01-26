@@ -5,12 +5,13 @@ LyricstranslateFetcher::LyricstranslateFetcher(QObject *parent) : QObject(parent
     manager = new QNetworkAccessManager(this);
     endpoint = "https://lyricstranslate.com";
     id = "LT";
+    fetchToken();
 }
 
 void LyricstranslateFetcher::fetchLyrics(const QString link)
 {
-    qDebug() << "LT fetching lyrics...";
     if (!link.startsWith(endpoint)) return;
+    qDebug() << "LT fetching lyrics...";
 
     QNetworkRequest request;
     request.setUrl(QUrl(link));
@@ -28,7 +29,7 @@ void LyricstranslateFetcher::fetchList(const QString songTitle)
                     "&hl=en"
                     "&cx=partner-pub-2890000658857916:3199793784"
                     "&q=" + songTitle +
-                    "&cse_tok=AJvRUv3WG1mqEr49D9l8jFozQF7N:1643028010926"
+                    "&cse_tok=" + cse_token +
                     "&exp=csqr,cc&callback=google.search.cse.api3773"));
 
     manager->disconnect();
@@ -97,4 +98,19 @@ void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
 
     emit listReady(list);
     reply->deleteLater();
+}
+
+void LyricstranslateFetcher::fetchToken()
+{
+    QNetworkRequest req;
+    req.setUrl(QUrl("https://www.google.com/cse/cse.js?"
+                    "cx=partner-pub-2890000658857916:3199793784"));
+    connect(manager, &QNetworkAccessManager::finished,
+            this, [=](QNetworkReply *reply) {
+        QString page = reply->readAll();
+        int start = page.indexOf(TOKEN_KEY) + sizeof(TOKEN_KEY) - 1;
+        int end = page.indexOf("\"", start + sizeof(TOKEN_KEY) + 1);
+        cse_token = page.mid(start, end - start);
+    });
+    manager->get(req);
 }

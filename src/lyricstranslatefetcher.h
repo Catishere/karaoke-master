@@ -7,6 +7,8 @@
 #include <QJsonArray>
 #include "lyricsfetcher.h"
 
+#define TOKEN_KEY "\"cse_token\": \""
+
 class LyricstranslateFetcher : public QObject, public LyricsFetcher
 {
     Q_OBJECT
@@ -22,6 +24,9 @@ signals:
 private slots:
     void lyricsFetched(QNetworkReply *reply) override;
     void listFetched(QNetworkReply *reply) override;
+private:
+    QString cse_token;
+    void fetchToken();
 };
 
 #endif // LYRICSTRANSLATEFETCHER_H
