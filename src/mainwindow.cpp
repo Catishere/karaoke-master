@@ -135,7 +135,7 @@ bool MainWindow::refreshSongList()
 
 bool MainWindow::createTracklistFile()
 {
-    QString list("exec lyricsmaster;\n");
+    QString list("exec lyricsmaster.cfg;\n");
     const char* border =
           "echo \"--------------------------------------------------------\"\n";
     list.append(border);
@@ -188,12 +188,16 @@ bool MainWindow::addSongToConfig(const QString &filename, const QString &id)
 bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
+    QString compatWriteCfg = "host_writeconfig";
+    if (configController.getCurrentConfigRef()->getFullName() == "Half-Life")
+        compatWriteCfg = "writecfg";
+
     QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
     QString str = QStringLiteral("alias say_song%2 \"%4 Current Song: %1\";"
                                  "alias song%2 \"alias spamycs song%2lyrics0;"
                                  "bind %3 %2; alias lyrics_current say_song%2;"
-                                 "host_writeconfig lyrics_trigger;\n")
-                .arg(songname, id, relay_key, sayType);
+                                 "%5 lyrics_trigger;\n")
+                .arg(songname, id, relay_key, sayType, compatWriteCfg);
 
     dest.write(str.toUtf8());
     return true;
@@ -246,6 +250,9 @@ void MainWindow::loadSong(int songid)
 void MainWindow::checkConfigFile()
 {
     QString ud = configController.getUserDataPath();
+    if (configController.getCurrentConfigRef()->getFullName() == "Half-Life")
+        ud = configController.getCurrentGamePath() + "/lyrics_trigger.cfg";
+
     if (QFileInfo::exists(ud))
     {
         QFile f(ud);
@@ -621,8 +628,8 @@ void MainWindow::on_actionGuide_triggered()
 {
     QMessageBox::information(this, "Guide",
     "Press 'Choose config' and choose your game cfg folder to begin.<br>"
-    "Type exec lyrics_list in the console to see the current loaded songs.<br>"
-    "Use the settings menu to choose which keys you want to bind.<br>"
+    "Type exec lyrics_list.cfg in the console to see the current loaded songs."
+    "<br>Use the settings menu to choose which keys you want to bind.<br>"
     "Press Start and become a DJ.<br>More info "
     "<a href='https://github.com/Catishere/karaoke-master'>here</a>.");
 }

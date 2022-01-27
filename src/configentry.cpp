@@ -63,6 +63,7 @@ ConfigEntry::ConfigEntry(QString &path)
     this->path = path;
     this->status = false;
     this->alwaysDownload = false;
+    this->keyBindings = {{"Voice", "x"},{"Lyrics", "mouse4"}};
     this->pc = "Average";
 }
 
