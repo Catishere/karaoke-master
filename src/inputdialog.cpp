@@ -14,7 +14,7 @@ InputDialog::InputDialog(QWidget *parent,  StringPairList inputs,
         connect(button, &QPushButton::pressed,
                 this, [=](){
             button->setDisabled(true);
-            getKeyInput(button, item.first);
+            openKeyInputDialog(button, item.first);
             button->setDisabled(false);
         });
         button->setText(item.second);
@@ -54,7 +54,7 @@ StringPairList InputDialog::getStrings(bool *ok)
     return list;
 }
 
-void InputDialog::getKeyInput(QPushButton *button, QString command)
+void InputDialog::openKeyInputDialog(QPushButton *button, QString command)
 {
     KeyPressDialog *kpd = new KeyPressDialog(this, button->text(), command);
     connect(kpd, &KeyPressDialog::keyPressed,

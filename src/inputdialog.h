@@ -25,7 +25,7 @@ public:
     StringPairList getStrings(bool *ok);
 
 private:
-    void getKeyInput(QPushButton *button, QString command);
+    void openKeyInputDialog(QPushButton *button, QString command);
     QList<QPushButton*> fields;
     StringPairList bindings;
 };
