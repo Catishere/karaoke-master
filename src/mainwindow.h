@@ -24,7 +24,7 @@
 #include "lyricstranslatefetcher.h"
 #include "updatemanager.h"
 
-#define VERSION "v1.1.4"
+#define VERSION "v1.1.5"
 
 namespace Ui {
 class MainWindow;
