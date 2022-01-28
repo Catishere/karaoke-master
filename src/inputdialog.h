@@ -3,13 +3,15 @@
 
 #include <QDialog>
 #include <QLabel>
-#include <QLineEdit>
+#include <QPushButton>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 
+#include "keypressdialog.h"
+
 typedef QList<QPair<QString, QString>> StringPairList;
 
-class QLineEdit;
+class QPushButton;
 class QLabel;
 
 class InputDialog : public QDialog
@@ -23,7 +25,8 @@ public:
     StringPairList getStrings(bool *ok);
 
 private:
-    QList<QLineEdit*> fields;
+    void getKeyInput(QPushButton *button, QString command);
+    QList<QPushButton*> fields;
     StringPairList bindings;
 };
 
