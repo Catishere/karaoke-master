@@ -54,9 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateManager, &UpdateManager::downloadProgress,
             this, &MainWindow::downloadProgress);
 
+    showUpdateNotification();
+
     setWindowIcon(QIcon(":/icon/favicon.ico"));
 
-    qDebug() << QSysInfo::machineUniqueId();
+    stats.sendLaunch();
 
     refreshSongList();
 }
@@ -843,6 +845,26 @@ void MainWindow::addListWithPriorty(const StringPairList &list)
     } else if (list.at(0).second.startsWith("https://lyricstranslate.com")) {
         search_list.append(list);
     }
+}
+
+void MainWindow::showUpdateNotification()
+{
+    QMetaObject::Connection * const connection = new QMetaObject::Connection;
+    *connection = connect(updateManager, &UpdateManager::finished,
+                          this, [this, connection](QString version) {
+        QObject::disconnect(*connection);
+        delete connection;
+        if (version == VERSION) return;
+        auto reply = QMessageBox::question(this, "Update available",
+                                    "Update for version " + version + " is "
+                                    "available (Current " VERSION "). "
+                                    "Do you want to update?",
+                                    QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+            on_actionUpdate_client_triggered();
+    });
+
+    updateManager->getClientVersion();
 }
 
 void MainWindow::lyricsListFetched(const StringPairList &list)

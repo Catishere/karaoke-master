@@ -33,6 +33,7 @@ SOURCES += \
         mainwindow.cpp \
     configentry.cpp \
     configcontroller.cpp \
+    statisticsmanager.cpp \
     updatemanager.cpp
 
 HEADERS += \
@@ -44,6 +45,7 @@ HEADERS += \
         mainwindow.h \
     configentry.h \
     configcontroller.h \
+    statisticsmanager.h \
     updatemanager.h
 
 FORMS += \

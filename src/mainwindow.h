@@ -14,7 +14,6 @@
 #include <QMovie>
 #include <QDebug>
 #include <QTimer>
-#include <QtNetwork/QNetworkReply>
 
 #include "configentry.h"
 #include "configcontroller.h"
@@ -23,8 +22,9 @@
 #include "lyricsfetcher.h"
 #include "lyricstranslatefetcher.h"
 #include "updatemanager.h"
+#include "statisticsmanager.h"
 
-#define VERSION "v1.1.5"
+#define VERSION "v1.1.6"
 
 namespace Ui {
 class MainWindow;
@@ -55,6 +55,7 @@ public:
 private:
     void allLyricsListsFetched();
     void addListWithPriorty(const StringPairList &list);
+    void showUpdateNotification();
 
 private slots:
 
@@ -87,6 +88,7 @@ private:
     Ui::MainWindow *ui;
     ConfigController configController;
     UpdateManager *updateManager;
+    StatisticsManager stats;
     QString sayType;
     QString temp_lyrics_name;
     QString dl_file_name;

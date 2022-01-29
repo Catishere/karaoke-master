@@ -8,20 +8,39 @@ UpdateManager::UpdateManager(QObject *parent) : QObject(parent)
 void UpdateManager::updateYTDL()
 {
     QNetworkRequest req;
-    req.setUrl(QUrl("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest"));
-    manager->disconnect();
-    connect(manager, &QNetworkAccessManager::finished,
+    req.setUrl(QUrl("https://api.github.com/repos/yt-dlp/"
+                    "yt-dlp/releases/latest"));
+    conn = connect(manager, &QNetworkAccessManager::finished,
             this, &UpdateManager::YTDLLastReleaseFetched);
+    manager->get(req);
+}
+
+void UpdateManager::getClientVersion()
+{
+    QNetworkRequest req;
+    req.setUrl(QUrl("https://api.github.com/repos/Catishere/"
+                    "karaoke-master/releases/latest"));
+    manager->disconnect();
+    conn = connect(manager, &QNetworkAccessManager::finished,
+            this, [this](QNetworkReply *reply) {
+        QJsonDocument doc(QJsonDocument::fromJson(reply->readAll()));
+        QString version = doc["tag_name"]
+                .toString();
+        emit finished(version);
+        this->disconnect(conn);
+    });
     manager->get(req);
 }
 
 void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
 {
+    this->disconnect(conn);
     QString reply_url = reply->url().toString();
 
     if (reply_url.startsWith("https://api.github.com")) {
         QByteArray data = reply->readAll();
-        QRegularExpression regex("https:..github.com.yt-dlp.yt-dlp.releases.download.\\d{4,4}\\.\\d\\d\\.\\d\\d.yt-dlp.exe");
+        QRegularExpression regex("https:..github.com.yt-dlp.yt-dlp.releases.dow"
+                                 "nload.\\d{4,4}\\.\\d\\d\\.\\d\\d.yt-dlp.exe");
         QString dl_url = regex.match(data).captured(0);
 
         QFile ytdlv("ytdl_link.txt");

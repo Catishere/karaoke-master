@@ -7,6 +7,8 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QRegularExpression>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 enum class Response {
     UPDATED,
@@ -20,12 +22,15 @@ class UpdateManager : public QObject
 public:
     explicit UpdateManager(QObject *parent = nullptr);
     void updateYTDL();
+    void getClientVersion();
 
 signals:
     void YTDLUpdateReady(Response);
+    void finished(QString);
     void downloadProgress(qint64, qint64);
 private:
     QNetworkAccessManager *manager;
+    QMetaObject::Connection conn;
 
 private slots:
     void YTDLLastReleaseFetched(QNetworkReply *reply);

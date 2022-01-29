@@ -232,6 +232,12 @@ void KeyPressDialog::keyPressEvent(QKeyEvent *event)
     case Qt::Key_ScrollLock:
         emit keyPressed("scrolllock");
     break;
+    case Qt::Key_Space:
+        emit keyPressed("space");
+    break;
+    case Qt::Key_Backslash:
+        emit keyPressed("\\");
+    break;
     }
 }
 
