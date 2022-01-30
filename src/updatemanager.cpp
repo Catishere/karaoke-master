@@ -15,18 +15,15 @@ void UpdateManager::updateYTDL()
     manager->get(req);
 }
 
-void UpdateManager::getClientVersion()
+void UpdateManager::getUpdateInfo()
 {
     QNetworkRequest req;
     req.setUrl(QUrl("https://api.github.com/repos/Catishere/"
                     "karaoke-master/releases/latest"));
-    manager->disconnect();
+
     conn = connect(manager, &QNetworkAccessManager::finished,
             this, [this](QNetworkReply *reply) {
-        QJsonDocument doc(QJsonDocument::fromJson(reply->readAll()));
-        QString version = doc["tag_name"]
-                .toString();
-        emit finished(version);
+        emit finished(reply->readAll());
         this->disconnect(conn);
     });
     manager->get(req);

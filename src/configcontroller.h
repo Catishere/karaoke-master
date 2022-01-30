@@ -30,12 +30,12 @@ public:
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
     void setAccountId(const QString &accountId);
+    void setUpdateNotification();
+    bool isUpdateNotification() const;
 
 private:
     ConfigEntry *currentConfig;
-    QString currentGamePath;
-    QString accountId;
-    QString userdataPath;
+    QJsonObject commonSettings;
     QList<ConfigEntry> configEntries;
 };
 
