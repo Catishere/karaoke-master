@@ -849,22 +849,36 @@ void MainWindow::addListWithPriorty(const StringPairList &list)
 
 void MainWindow::showUpdateNotification()
 {
-    QMetaObject::Connection * const connection = new QMetaObject::Connection;
-    *connection = connect(updateManager, &UpdateManager::finished,
-                          this, [this, connection](QString version) {
-        QObject::disconnect(*connection);
-        delete connection;
-        if (version == VERSION) return;
+    auto const conn = new QMetaObject::Connection;
+    *conn = connect(updateManager, &UpdateManager::finished,
+                          this, [this, conn](const QByteArray info) {
+        QObject::disconnect(*conn);
+        delete conn;
+        QJsonDocument doc = QJsonDocument::fromJson(info);
+        QString version = doc["tag_name"].toString();
+        QString changes = doc["body"].toString();
+
+        if (version == VERSION) {
+            if (configController.isUpdateNotification()) {
+                configController.setUpdateNotification();
+                configController.saveConfig();
+                QMessageBox::information(this, "Updated",
+                                         "The application is successfully"
+                                         " updated to version " VERSION
+                                         ".\n New things: \n" + changes);
+            }
+            return;
+        }
         auto reply = QMessageBox::question(this, "Update available",
-                                    "Update for version " + version + " is "
-                                    "available (Current " VERSION "). "
-                                    "Do you want to update?",
-                                    QMessageBox::Yes | QMessageBox::No);
+                                           "Update for version " + version + " "
+                                           "is available (Current " VERSION ")."
+                                           " Do you want to update?",
+                                           QMessageBox::Yes | QMessageBox::No);
         if (reply == QMessageBox::Yes)
             on_actionUpdate_client_triggered();
     });
 
-    updateManager->getClientVersion();
+    updateManager->getUpdateInfo();
 }
 
 void MainWindow::lyricsListFetched(const StringPairList &list)

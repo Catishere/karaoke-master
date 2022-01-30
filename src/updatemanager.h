@@ -22,11 +22,11 @@ class UpdateManager : public QObject
 public:
     explicit UpdateManager(QObject *parent = nullptr);
     void updateYTDL();
-    void getClientVersion();
+    void getUpdateInfo();
 
 signals:
     void YTDLUpdateReady(Response);
-    void finished(QString);
+    void finished(const QByteArray);
     void downloadProgress(qint64, qint64);
 private:
     QNetworkAccessManager *manager;

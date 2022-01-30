@@ -15,7 +15,8 @@ void ConfigController::read(const QJsonObject &json)
 {
     configEntries.clear();
     QJsonArray configArray = json["configs"].toArray();
-    userdataPath = json["userdata"].toString();
+    commonSettings.insert("userdataPath", json["userdata"]);
+    commonSettings.insert("updateNotification", json["updateNotification"]);
 
     for (int configIndex = 0; configIndex < configArray.size(); ++configIndex)
     {
@@ -37,7 +38,8 @@ void ConfigController::write(QJsonObject &json) const
         configArray.append(configObject);
     }
     json["configs"] = configArray;
-    json["userdata"] = userdataPath;
+    json["userdata"] = commonSettings["userdataPath"];
+    json["updateNotification"] = commonSettings["updateNotification"];
 }
 
 bool ConfigController::saveConfig() const
@@ -107,12 +109,14 @@ bool ConfigController::choose(const QString &full_name)
 
     QString path = currentConfig->getPath();
     QString userpath = "/userdata/"
-            + accountId +"/"
+            + commonSettings["accountId"].toString() +"/"
             + currentConfig->getCode()
             + "/local/cfg/lyrics_trigger.cfg";
-    userdataPath = path.left(path.indexOf("/steamapps")) + userpath;
-    currentGamePath = path.left(path.indexOf('/', path.indexOf("common") + 8));
-
+    commonSettings.insert("userdataPath",
+                          path.left(path.indexOf("/steamapps")) + userpath);
+    commonSettings.insert("currentGamePath",
+                          path.left(path.indexOf('/',
+                                                 path.indexOf("common") + 8)));
     saveConfig();
 
     return ret;
@@ -120,12 +124,12 @@ bool ConfigController::choose(const QString &full_name)
 
 QString ConfigController::getUserDataPath() const
 {
-    return userdataPath;
+    return commonSettings["userdataPath"].toString();
 }
 
 QString ConfigController::getCurrentGamePath() const
 {
-    return currentGamePath;
+    return commonSettings["currentGamePath"].toString();
 }
 
 ConfigEntry ConfigController::getCurrentConfig() const
@@ -145,6 +149,16 @@ QList<ConfigEntry> ConfigController::getConfigEntries() const
 
 void ConfigController::setAccountId(const QString &accountId)
 {
-    this->accountId = accountId;
+    commonSettings.insert("accountId", accountId);
     choose(currentConfig->getFullName());
+}
+
+void ConfigController::setUpdateNotification()
+{
+    commonSettings.insert("updateNotification", true);
+}
+
+bool ConfigController::isUpdateNotification() const
+{
+    return commonSettings["updateNotification"] == QJsonValue::Undefined;
 }
