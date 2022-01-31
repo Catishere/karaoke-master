@@ -31,7 +31,6 @@ void UpdateManager::getUpdateInfo()
 
 void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
 {
-    this->disconnect(conn);
     QString reply_url = reply->url().toString();
 
     if (reply_url.startsWith("https://api.github.com")) {
@@ -41,8 +40,10 @@ void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
         QString dl_url = regex.match(data).captured(0);
 
         QFile ytdlv("ytdl_link.txt");
-        if (!ytdlv.open(QIODevice::ReadOnly))
-                return;
+
+        if (!ytdlv.open(QIODevice::ReadWrite))
+            return;
+
         QString saved_url = ytdlv.readAll();
         ytdlv.close();
 
@@ -66,6 +67,7 @@ void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
         connect(reply, &QNetworkReply::downloadProgress,
                 this, &UpdateManager::downloadProgress);
     } else {
+        this->disconnect(conn);
         QFile file("yt-dlp.exe");
         if (!file.open(QIODevice::WriteOnly)) {
             qDebug() << "Failed to open yt-dlp.exe for writing";
