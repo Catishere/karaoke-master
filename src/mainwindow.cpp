@@ -625,7 +625,6 @@ void MainWindow::on_actionAbout_triggered()
                                       ". Made by Victor G.");
 }
 
-
 void MainWindow::on_actionGuide_triggered()
 {
     QMessageBox::information(this, "Guide",
@@ -748,12 +747,13 @@ void MainWindow::on_actionOptions_triggered()
 
     QCheckBox *checkbox = new QCheckBox("Always download song", dialog);
     QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"), dialog);
-    QList<QRadioButton *> buttons;
-    buttons.append(new QRadioButton(tr("Potato"), dialog));
-    buttons.append(new QRadioButton(tr("Slow"), dialog));
-    buttons.append(new QRadioButton(tr("Average"), dialog));
-    buttons.append(new QRadioButton(tr("Fast"), dialog));
-    buttons.append(new QRadioButton(tr("Alien"), dialog));
+    QList<QRadioButton *> buttons = {
+        new QRadioButton(tr("Potato"), dialog),
+        new QRadioButton(tr("Slow"), dialog),
+        new QRadioButton(tr("Average"), dialog),
+        new QRadioButton(tr("Fast"), dialog),
+        new QRadioButton(tr("Alien"), dialog)
+    };
 
     QString currentPC = config->getPc();
     checkbox->setChecked(config->getAlwaysDownload());
@@ -888,7 +888,8 @@ void MainWindow::showUpdateNotification()
                                            "Update for version " + version + " "
                                            "is available (Current " VERSION ")."
                                            " Do you want to update?",
-                                           QMessageBox::Yes | QMessageBox::No);
+                                           QMessageBox::Yes | QMessageBox::No,
+                                           QMessageBox::Yes);
         if (reply == QMessageBox::Yes)
             on_actionUpdate_client_triggered();
     });
