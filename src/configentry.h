@@ -9,7 +9,7 @@
 #include <QFile>
 #include <QDebug>
 
-typedef QList<QPair<QString, QString>> StringPairList;
+#include "stringpairlist.h"
 
 class ConfigEntry
 {
@@ -36,8 +36,8 @@ public:
     QString getFullName() const;
     bool getStatus() const;
     void setStatus(bool status);
-    const QList<QPair<QString, QString> > &getKeyBindings() const;
-    void setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings);
+    const StringPairList &getKeyBindings() const;
+    void setKeyBindings(const StringPairList &newKeyBindings);
     const QString &getPc() const;
     void setPc(const QString &newPc);
     bool getAlwaysDownload() const;

@@ -5,11 +5,11 @@
 #include <QList>
 #include <QPair>
 #include <QtPlugin>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
-typedef QList<QPair<QString, QString>> StringPairList;
+#include "stringpairlist.h"
 
 class LyricsFetcher
 {

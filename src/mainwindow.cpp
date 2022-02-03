@@ -528,8 +528,8 @@ void MainWindow::loadDropListPaths()
     }
 
     int index = ui->dropList->findData(configController
-                                       .getCurrentConfig()
-                                       .getName());
+                                       .getCurrentConfigRef()
+                                       ->getName());
     if ( index != -1 ) {
         ui->dropList->setCurrentIndex(index);
     }
@@ -537,10 +537,10 @@ void MainWindow::loadDropListPaths()
 
 void MainWindow::refreshScriptPaths()
 {
-    ConfigEntry config = configController.getCurrentConfig();
+    ConfigEntry *config = configController.getCurrentConfigRef();
 
-    tracklist.setFileName(config.getPath() + "/lyrics_list.cfg");
-    dest.setFileName(config.getPath() + "/lyricsmaster.cfg");
+    tracklist.setFileName(config->getPath() + "/lyrics_list.cfg");
+    dest.setFileName(config->getPath() + "/lyricsmaster.cfg");
 }
 
 const QStringList MainWindow::getMostRecentUser() const
@@ -674,13 +674,8 @@ void MainWindow::on_actionKey_bindings_triggered()
         return;
     }
 
-    auto keys = config->getKeyBindings();
-    if (keys.isEmpty()) {
-        keys.append({{"Voice", "x"},{"Lyrics", "mouse4"}});
-    }
-
     bool ok;
-    InputDialog id(this, keys, "Key Bindings");
+    InputDialog id(this, config->getKeyBindings(), "Key Bindings");
     StringPairList list = id.getStrings(&ok);
     if (ok) {
         config->setKeyBindings(list);

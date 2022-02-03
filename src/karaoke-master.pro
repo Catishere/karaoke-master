@@ -46,6 +46,7 @@ HEADERS += \
     configentry.h \
     configcontroller.h \
     statisticsmanager.h \
+    stringpairlist.h \
     updatemanager.h
 
 FORMS += \

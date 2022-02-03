@@ -1,11 +1,11 @@
 #include "configentry.h"
 
-const QList<QPair<QString, QString> > &ConfigEntry::getKeyBindings() const
+const StringPairList &ConfigEntry::getKeyBindings() const
 {
     return keyBindings;
 }
 
-void ConfigEntry::setKeyBindings(const QList<QPair<QString, QString> > &newKeyBindings)
+void ConfigEntry::setKeyBindings(const StringPairList &newKeyBindings)
 {
     keyBindings = newKeyBindings;
 }
@@ -63,7 +63,9 @@ ConfigEntry::ConfigEntry(QString &path)
     this->path = path;
     this->status = false;
     this->alwaysDownload = false;
-    this->keyBindings = {{"Voice", "x"},{"Lyrics", "mouse4"}};
+    this->keyBindings = {{"Voice", "x"},
+                         {"Lyrics", "mouse4"},
+                         {"List", "kp_downarrow"}};
     this->pc = "Average";
 }
 
@@ -75,9 +77,16 @@ void ConfigEntry::read(const QJsonObject &json)
     full_name = json["full_name"].toString();
     status = json["status"].toBool();
 
-    keyBindings.clear();
+    keyBindings = {{"Voice", "x"},
+                   {"Lyrics", "mouse4"},
+                   {"List", "kp_downarrow"}};
+
     for (auto &key : json["keys"].toObject().keys()) {
-        keyBindings.append({key, json["keys"][key].toString()});
+        for (auto &kb : keyBindings) {
+            if (kb.first == key) {
+                kb = {key, json["keys"][key].toString()};
+            }
+        }
     }
     pc = json["pc"].toString();
     alwaysDownload = json["always_download"].toBool();

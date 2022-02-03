@@ -8,8 +8,7 @@
 #include <QFormLayout>
 
 #include "keypressdialog.h"
-
-typedef QList<QPair<QString, QString>> StringPairList;
+#include "stringpairlist.h"
 
 class QPushButton;
 class QLabel;
