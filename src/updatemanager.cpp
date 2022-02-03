@@ -10,6 +10,7 @@ void UpdateManager::updateYTDL()
     QNetworkRequest req;
     req.setUrl(QUrl("https://api.github.com/repos/yt-dlp/"
                     "yt-dlp/releases/latest"));
+    this->disconnect(conn);
     conn = connect(manager, &QNetworkAccessManager::finished,
             this, &UpdateManager::YTDLLastReleaseFetched);
     manager->get(req);
@@ -41,8 +42,11 @@ void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
 
         QFile ytdlv("ytdl_link.txt");
 
-        if (!ytdlv.open(QIODevice::ReadWrite))
+        if (!ytdlv.open(QIODevice::ReadWrite)) {
+            qDebug() << "Failed to open file for reading/writing";
+            emit YTDLUpdateReady(Response::FAILED);
             return;
+        }
 
         QString saved_url = ytdlv.readAll();
         ytdlv.close();
@@ -60,6 +64,11 @@ void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
 
         ytdlv.write(dl_url.toLatin1());
         ytdlv.close();
+
+        // Hardcoded fix for broken build 2022.02.03
+        if (dl_url.endsWith("2022.02.03/yt-dlp.exe"))
+            dl_url = "https://github.com/yt-dlp/yt-dlp/releases/download/"
+                     "2022.01.21/yt-dlp.exe";
 
         QNetworkRequest request;
         request.setUrl(QUrl(dl_url));
