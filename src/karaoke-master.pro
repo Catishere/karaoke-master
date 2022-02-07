@@ -33,6 +33,7 @@ SOURCES += \
         mainwindow.cpp \
     configentry.cpp \
     configcontroller.cpp \
+    musixmatchfetcher.cpp \
     statisticsmanager.cpp \
     updatemanager.cpp
 
@@ -45,6 +46,7 @@ HEADERS += \
         mainwindow.h \
     configentry.h \
     configcontroller.h \
+    musixmatchfetcher.h \
     statisticsmanager.h \
     stringpairlist.h \
     updatemanager.h

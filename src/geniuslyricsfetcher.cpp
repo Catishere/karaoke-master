@@ -9,8 +9,8 @@ GeniusLyricsFetcher::GeniusLyricsFetcher(QObject *parent) : QObject(parent)
 
 void GeniusLyricsFetcher::fetchLyrics(QString link)
 {
-    qDebug() << "Genius fetching lyrics...";
     if (!link.startsWith(endpoint)) return;
+    qDebug() << "Genius fetching lyrics...";
 
     QNetworkRequest request;
     request.setUrl(QUrl(link));
@@ -79,7 +79,7 @@ void GeniusLyricsFetcher::listFetched(QNetworkReply *reply)
     while (i.hasNext())
     {
         QRegularExpressionMatch match = i.next();
-        QString link = "https://genius.com" + match.captured("link");
+        QString link = endpoint + match.captured("link");
         QString song = match.captured("song");
         QString artist = match.captured("artist");
 

@@ -30,7 +30,7 @@ public:
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
     void setAccountId(const QString &accountId);
-    void setUpdateNotification();
+    void setUpdateNotification(bool shown);
     bool isUpdateNotification() const;
 
 private:

@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
                                        200;
     lyrics_fetchers.append(new GeniusLyricsFetcher(this));
     lyrics_fetchers.append(new LyricstranslateFetcher(this));
+    lyrics_fetchers.append(new MusixmatchFetcher(this));
 
     for (auto& fet : lyrics_fetchers) {
         connect(dynamic_cast<QObject*>(fet), SIGNAL(listReady(StringPairList)),
@@ -651,6 +652,8 @@ void MainWindow::on_actionUpdate_client_triggered()
                 return;
             }
 
+            configController.setUpdateNotification(false);
+
             qApp->quit();
             QProcess::startDetached("karaoke-master-update.exe");
         });
@@ -812,6 +815,7 @@ void MainWindow::allLyricsListsFetched()
 
     connect(buttonBox, &QDialogButtonBox::accepted, this, [=](){
         QString item = comboBox->currentText();
+        qsizetype item_index = comboBox->currentIndex();
         if (!item.isEmpty())
         {
             if (!temp_lyrics_name.isEmpty()) {
@@ -821,11 +825,8 @@ void MainWindow::allLyricsListsFetched()
 
             temp_lyrics_name = item;
 
-            for (auto &fetcher : lyrics_fetchers) {
-                fetcher->fetchLyrics(search_list
-                                     .at(comboBox->findText(item))
-                                     .second);
-            }
+            for (auto &fetcher : lyrics_fetchers)
+                fetcher->fetchLyrics(search_list.at(item_index).second);
 
             search_list.clear();
 
@@ -838,6 +839,7 @@ void MainWindow::allLyricsListsFetched()
     });
 
     connect(buttonBox, &QDialogButtonBox::rejected, this, [=](){
+        search_list.clear();
         dialog->close();
     });
 
@@ -848,13 +850,14 @@ void MainWindow::addListWithPriorty(const StringPairList &list)
 {
     if (list.isEmpty())
         return;
-    if (list.at(0).second.startsWith("https://genius.com")) {
+    auto url = list.at(0).second;
+
+    if (url.startsWith(lyrics_fetchers.at(0)->getEndpoint())) {
         StringPairList copy(list);
         copy.append(search_list);
         search_list = copy;
-    } else if (list.at(0).second.startsWith("https://lyricstranslate.com")) {
+    } else
         search_list.append(list);
-    }
 }
 
 void MainWindow::showUpdateNotification()
@@ -870,7 +873,7 @@ void MainWindow::showUpdateNotification()
 
         if (version == VERSION) {
             if (configController.isUpdateNotification()) {
-                configController.setUpdateNotification();
+                configController.setUpdateNotification(true);
                 configController.saveConfig();
                 QMessageBox::information(this, "Updated",
                                          "The application is successfully"

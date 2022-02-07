@@ -18,6 +18,8 @@ public:
     virtual void fetchLyrics(const QString link) = 0;
     virtual void fetchList(const QString songTitle) = 0;
 
+    const QString &getEndpoint() const;
+
 protected:
     QNetworkAccessManager *manager;
     QString endpoint;
@@ -31,6 +33,11 @@ protected slots:
     virtual void lyricsFetched(QNetworkReply *reply) = 0;
     virtual void listFetched(QNetworkReply *reply) = 0;
 };
+
+inline const QString &LyricsFetcher::getEndpoint() const
+{
+    return endpoint;
+}
 
 Q_DECLARE_INTERFACE(LyricsFetcher, "LyricsFetcher")
 

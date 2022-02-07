@@ -4,5 +4,6 @@
         <file>loading.gif</file>
         <file>icon/LT.ico</file>
         <file>icon/GE.ico</file>
+        <file>icon/MM.ico</file>
     </qresource>
 </RCC>

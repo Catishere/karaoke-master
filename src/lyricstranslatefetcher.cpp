@@ -78,8 +78,12 @@ void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
 
     QJsonDocument doc(QJsonDocument::fromJson(data));
     const QJsonValue results = doc["results"];
+    const int resultCount = doc["cursor"]["resultCount"].
+            toString().
+            remove(',').
+            toInt();
 
-    if (!results.isNull()) {
+    if (!results.isNull() && resultCount > 15) {
         for (auto&& result : results.toArray()) {
             auto item = result.toObject().value("titleNoFormatting").toString();
             qsizetype index = item.lastIndexOf(" lyrics");

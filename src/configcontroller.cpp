@@ -153,12 +153,13 @@ void ConfigController::setAccountId(const QString &accountId)
     choose(currentConfig->getFullName());
 }
 
-void ConfigController::setUpdateNotification()
+void ConfigController::setUpdateNotification(bool shown)
 {
-    commonSettings.insert("updateNotification", true);
+    commonSettings.insert("updateNotification", shown);
 }
 
 bool ConfigController::isUpdateNotification() const
 {
-    return commonSettings["updateNotification"] == QJsonValue::Undefined;
+    return commonSettings["updateNotification"] == QJsonValue::Undefined
+            || !commonSettings["updateNotification"].toBool();
 }
