@@ -44,10 +44,12 @@ void MusixmatchFetcher::lyricsFetched(QNetworkReply *reply)
     int end = page.indexOf(END_TOKEN, start);
     lyrics = page.mid(start, end - start) + "\n";
 
-    start = page.indexOf(START_TOKEN, end) + sizeof(START_TOKEN) - 1;
-    start = page.indexOf(">", start) + 1;
-    end = page.indexOf(END_TOKEN, start);
-    lyrics.append(page.mid(start, end - start));
+    start = page.indexOf(START_TOKEN, end);
+    if (start > 0) {
+        start = page.indexOf(">", start + sizeof(START_TOKEN) - 1) + 1;
+        end = page.indexOf(END_TOKEN, start);
+        lyrics.append(page.mid(start, end - start));
+    }
 
     lyrics.replace("&quot;", "'");
     lyrics.replace("&#x27;", "'");

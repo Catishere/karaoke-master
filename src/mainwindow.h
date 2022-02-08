@@ -62,7 +62,6 @@ private slots:
 
     void checkConfigFile();
     void songCooked();
-    void downloadFinished(int exitCode);
     void showContextMenu(const QPoint &pos);
     void lyricsListFetched(const StringPairList& list);
     void lyricsFetched(const QString& lyrics);
@@ -99,7 +98,6 @@ private:
     QFile dest;
     QTimer* timer;
     QTimer* timeout_timer;
-    QTimer* dl_file_timer;
     QMovie *movie;
     QList<LyricsFetcher*> lyrics_fetchers;
     int fetchers_ready;

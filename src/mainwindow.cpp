@@ -427,6 +427,8 @@ void MainWindow::songCooked()
     if (timeout_timer->isActive())
         timeout_timer->stop();
 
+    delete timeout_timer;
+
     QDir root;
     root.setNameFilters(QStringList() << "*.wav" << "*.webm.part" << "*.webm");
     root.setFilter(QDir::Files);
@@ -466,16 +468,7 @@ void MainWindow::songCooked()
 
     QMessageBox::information(this, "Song Download", text);
 
-    dl_file_timer->stop();
-
     refreshSongList();
-}
-
-void MainWindow::downloadFinished(int exitCode)
-{
-    dl_file_timer = new QTimer(this);
-    dl_file_timer->start(800);
-    connect(dl_file_timer, &QTimer::timeout, this, &MainWindow::songCooked);
 }
 
 void MainWindow::downloadSongYoutube(QString &song_name)
@@ -500,7 +493,7 @@ void MainWindow::downloadSongYoutube(QString &song_name)
     timeout_timer->setInterval(10000);
     timeout_timer->setSingleShot(true);
     connect(timeout_timer, &QTimer::timeout, this, &MainWindow::songCooked);
-    connect(process, &QProcess::finished, this, &MainWindow::downloadFinished);
+    connect(process, &QProcess::finished, this, &MainWindow::songCooked);
     timeout_timer->start();
     movie->start();
     ui->loadingLabel->setVisible(true);

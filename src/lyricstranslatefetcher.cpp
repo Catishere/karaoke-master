@@ -46,7 +46,6 @@ void LyricstranslateFetcher::lyricsFetched(QNetworkReply *reply)
     QByteArray page = reply->readAll();
 
     int start = page.indexOf("<div id=\"song-body\"");
-    if (start < 0) return;
     int end = page.indexOf("<div id=\"song-transliteration\"", start);
 
     lyrics = page.mid(start, end - start);
