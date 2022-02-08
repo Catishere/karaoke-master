@@ -85,17 +85,13 @@ void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
     if (!results.isNull() && resultCount > 15) {
         for (auto&& result : results.toArray()) {
             auto item = result.toObject().value("titleNoFormatting").toString();
-            qsizetype index = item.lastIndexOf(" lyrics");
+            qsizetype index = item.lastIndexOf(" lyrics +");
+            if (index > 0) continue;
+            index = item.lastIndexOf(" lyrics");
             if (index > 0) item.truncate(index);
             auto link = result.toObject().value("unescapedUrl").toString();
             item = item.append(id).trimmed();
-            bool dub = false;
-            for (auto& e : list) {
-                if (e.first == item)
-                   dub = true;
-            }
-            if (!dub)
-                list.append({item, link});
+            list.append({item, link});
         }
     }
 
