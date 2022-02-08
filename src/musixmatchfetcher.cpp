@@ -63,7 +63,7 @@ void MusixmatchFetcher::listFetched(QNetworkReply *reply)
     StringPairList list;
     QByteArray page = reply->readAll();
     QString rs("<a class=\"title\" href=\"(?<link>/lyrics/.+?)\"><span>(?<song>"
-               ".+?)</span>.+?<a class=\"artist\" href=\"/artist/.+?>(?<artist>.+?)<");
+        ".+?)</span>.+?<a class=\"artist\" href=\"/artist/.+?>(?<artist>.+?)<");
 
     auto rx = QRegularExpression(rs,
                  QRegularExpression::DotMatchesEverythingOption);

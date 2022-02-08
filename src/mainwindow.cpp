@@ -653,6 +653,7 @@ void MainWindow::on_actionUpdate_client_triggered()
             }
 
             configController.setUpdateNotification(false);
+            configController.saveConfig();
 
             qApp->quit();
             QProcess::startDetached("karaoke-master-update.exe");
