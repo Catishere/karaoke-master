@@ -20,7 +20,7 @@ How to use:
 How to update the client:
 Run karaoke-master-update.exe in the folder next to karaoke-master.exe
 
-FAQ (I made that up I dont get any questions)
+## FAQ (I made that up I dont get any questions)
 
 Q: All music downloads are failing, how to fix this?\
 A: Press Update youtube-dl in the menu and hope for a miracle.
