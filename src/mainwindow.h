@@ -25,7 +25,7 @@
 #include "updatemanager.h"
 #include "statisticsmanager.h"
 
-#define VERSION "v1.1.9"
+#define VERSION "v1.2.0"
 
 namespace Ui {
 class MainWindow;
@@ -57,6 +57,7 @@ private:
     void allLyricsListsFetched();
     void addListWithPriorty(const StringPairList &list);
     void showUpdateNotification();
+    void updateAllowedFetchers();
 
 private slots:
 
@@ -99,7 +100,8 @@ private:
     QTimer* timer;
     QTimer* timeout_timer;
     QMovie *movie;
-    QList<LyricsFetcher*> lyrics_fetchers;
+    QList<LyricsFetcher*> allowed_fetchers;
+    QList<LyricsFetcher *> all_fetchers;
     int fetchers_ready;
     int timer_interval;
 };

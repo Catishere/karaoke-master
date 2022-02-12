@@ -33,11 +33,13 @@ MainWindow::MainWindow(QWidget *parent) :
     auto currentConfig = configController.getCurrentConfigRef();
     timer_interval = (currentConfig) ? getTimerInterval(currentConfig->getPc()):
                                        200;
-    lyrics_fetchers.append(new GeniusLyricsFetcher(this));
-    lyrics_fetchers.append(new LyricstranslateFetcher(this));
-    lyrics_fetchers.append(new MusixmatchFetcher(this));
+    all_fetchers = { new GeniusLyricsFetcher(this),
+                     new LyricstranslateFetcher(this),
+                     new MusixmatchFetcher(this) };
 
-    for (auto& fet : lyrics_fetchers) {
+    updateAllowedFetchers();
+
+    for (auto& fet : allowed_fetchers) {
         connect(dynamic_cast<QObject*>(fet), SIGNAL(listReady(StringPairList)),
                 this, SLOT(lyricsListFetched(StringPairList)));
         connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
@@ -415,7 +417,7 @@ void MainWindow::on_searchOnlineButton_clicked()
     if (ok && !text.isEmpty())
     {
         // Fetch list
-        for (auto &fetcher : lyrics_fetchers) {
+        for (auto &fetcher : allowed_fetchers) {
             fetcher->fetchList(text);
         }
         search_string = "";
@@ -733,12 +735,14 @@ void MainWindow::on_actionOptions_triggered()
 
     QVBoxLayout *lytMain = new QVBoxLayout(dialog);
     QHBoxLayout *hbox = new QHBoxLayout();
+    QHBoxLayout *fetchersHbox = new QHBoxLayout();
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                                        QDialogButtonBox::Close);
 
     QCheckBox *checkbox = new QCheckBox("Always download song", dialog);
     QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"), dialog);
+    QGroupBox *fetchersGroupBox = new QGroupBox(tr("Allow Fetchers"), dialog);
     QList<QRadioButton *> buttons = {
         new QRadioButton(tr("Potato"), dialog),
         new QRadioButton(tr("Slow"), dialog),
@@ -750,6 +754,23 @@ void MainWindow::on_actionOptions_triggered()
     QString currentPC = config->getPc();
     checkbox->setChecked(config->getAlwaysDownload());
 
+    if (configController.getAllowedFetchers().isEmpty())
+    {
+        QMap<QString, bool> map;
+        for (auto& f : all_fetchers) {
+            map.insert(f->getFullName(), true);
+        }
+        configController.setAllowedFetchers(map);
+        configController.saveConfig();
+    }
+
+    auto configFetcherList = configController.getAllowedFetchers();
+    for (auto& f : all_fetchers) {
+        auto cb = new QCheckBox(f->getFullName());
+        cb->setChecked(configFetcherList.find(f->getFullName()).value());
+        fetchersHbox->addWidget(cb);
+    }
+
     for (auto button : buttons) {
         hbox->addWidget(button);
         if (button->text() == currentPC)
@@ -757,8 +778,10 @@ void MainWindow::on_actionOptions_triggered()
     }
 
     hbox->addStretch(1);
+    fetchersGroupBox->setLayout(fetchersHbox);
     groupBox->setLayout(hbox);
     lytMain->addWidget(groupBox);
+    lytMain->addWidget(fetchersGroupBox);
     lytMain->addWidget(checkbox);
     lytMain->addWidget(buttonBox);
     dialog->setWindowTitle("Options");
@@ -766,12 +789,21 @@ void MainWindow::on_actionOptions_triggered()
 
     connect(buttonBox, &QDialogButtonBox::accepted, this, [=]() {
         config->setAlwaysDownload(checkbox->isChecked());
+        QMap<QString, bool> cfgFetchers;
+        for (int i = 0; i < all_fetchers.size(); ++i) {
+            auto widget = static_cast<QCheckBox *>(fetchersHbox->itemAt(i)
+                                                   ->widget());
+            cfgFetchers.insert(widget->text(), widget->isChecked());
+        }
+        configController.setAllowedFetchers(cfgFetchers);
+        updateAllowedFetchers();
+
         for (auto& button : buttons) {
             if (button->isChecked()) {
                 config->setPc(button->text());
-                configController.saveConfig();
             }
         }
+        configController.saveConfig();
         dialog->close();
     });
 
@@ -819,7 +851,7 @@ void MainWindow::allLyricsListsFetched()
 
             temp_lyrics_name = item;
 
-            for (auto &fetcher : lyrics_fetchers)
+            for (auto &fetcher : allowed_fetchers)
                 fetcher->fetchLyrics(search_list.at(item_index).second);
 
             search_list.clear();
@@ -846,7 +878,7 @@ void MainWindow::addListWithPriorty(const StringPairList &list)
         return;
     auto url = list.at(0).second;
 
-    if (url.startsWith(lyrics_fetchers.at(0)->getEndpoint())) {
+    if (url.startsWith(allowed_fetchers.at(0)->getEndpoint())) {
         StringPairList copy(list);
         copy.append(search_list);
         search_list = copy;
@@ -889,11 +921,24 @@ void MainWindow::showUpdateNotification()
     updateManager->getUpdateInfo();
 }
 
+void MainWindow::updateAllowedFetchers()
+{
+    allowed_fetchers.clear();
+    auto allowed = configController.getAllowedFetchers();
+    for (auto& f : all_fetchers) {
+        auto isAllowed = allowed.constFind(f->getFullName());
+        if (isAllowed != allowed.constEnd()
+            && isAllowed.value())
+            allowed_fetchers.append(f);
+    }
+
+}
+
 void MainWindow::lyricsListFetched(const StringPairList &list)
 {
     addListWithPriorty(list);
     fetchers_ready++;
-    if (fetchers_ready >= lyrics_fetchers.size())
+    if (fetchers_ready >= allowed_fetchers.size())
         allLyricsListsFetched();
 }
 
@@ -920,13 +965,12 @@ void MainWindow::lyricsFetched(const QString& lyrics)
     temp_lyrics_name = "";
 }
 
-
 void MainWindow::downloadProgress(qint64 ist, qint64 max)
 {
     ui->progressBar->setVisible(true);
     ui->progressBar->setRange(0, max);
     ui->progressBar->setValue(ist);
-    if(max < 0) ui->progressBar->setVisible(false);
+    if (max < 0) ui->progressBar->setVisible(false);
 }
 
 
