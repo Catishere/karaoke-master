@@ -5,6 +5,7 @@ GeniusLyricsFetcher::GeniusLyricsFetcher(QObject *parent) : QObject(parent)
     manager = new QNetworkAccessManager(this);
     endpoint = "https://genius.com";
     id = "GE";
+    fullName = "Genius";
 }
 
 void GeniusLyricsFetcher::fetchLyrics(QString link)

@@ -5,6 +5,7 @@ LyricstranslateFetcher::LyricstranslateFetcher(QObject *parent) : QObject(parent
     manager = new QNetworkAccessManager(this);
     endpoint = "https://lyricstranslate.com";
     id = "LT";
+    fullName = "Lyrics Translate";
     fetchToken();
 }
 

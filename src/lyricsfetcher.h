@@ -19,10 +19,12 @@ public:
     virtual void fetchList(const QString songTitle) = 0;
 
     const QString &getEndpoint() const;
+    const QString &getFullName() const;
 
 protected:
     QNetworkAccessManager *manager;
     QString endpoint;
+    QString fullName;
     QString id;
 
 signals:
@@ -37,6 +39,11 @@ protected slots:
 inline const QString &LyricsFetcher::getEndpoint() const
 {
     return endpoint;
+}
+
+inline const QString &LyricsFetcher::getFullName() const
+{
+    return fullName;
 }
 
 Q_DECLARE_INTERFACE(LyricsFetcher, "LyricsFetcher")

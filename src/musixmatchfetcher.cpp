@@ -5,6 +5,7 @@ MusixmatchFetcher::MusixmatchFetcher(QObject *parent) : QObject(parent)
     manager = new QNetworkAccessManager(this);
     endpoint = "https://www.musixmatch.com";
     id = "MM";
+    fullName = "Musixmatch";
 }
 
 void MusixmatchFetcher::fetchLyrics(const QString link)
