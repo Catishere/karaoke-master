@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     auto currentConfig = configController.getCurrentConfigRef();
     timer_interval = (currentConfig) ? getTimerInterval(currentConfig->getPc()):
                                        200;
+
     all_fetchers = { new GeniusLyricsFetcher(this),
                      new LyricstranslateFetcher(this),
                      new MusixmatchFetcher(this) };
@@ -753,6 +754,7 @@ void MainWindow::on_actionOptions_triggered()
 
     QString currentPC = config->getPc();
     checkbox->setChecked(config->getAlwaysDownload());
+    QMap<QString, bool> configFetcherList;
 
     if (configController.getAllowedFetchers().isEmpty())
     {
@@ -762,9 +764,10 @@ void MainWindow::on_actionOptions_triggered()
         }
         configController.setAllowedFetchers(map);
         configController.saveConfig();
-    }
+        configFetcherList = map;
+    } else
+        configFetcherList = configController.getAllowedFetchers();
 
-    auto configFetcherList = configController.getAllowedFetchers();
     for (auto& f : all_fetchers) {
         auto cb = new QCheckBox(f->getFullName());
         cb->setChecked(configFetcherList.find(f->getFullName()).value());
@@ -925,6 +928,8 @@ void MainWindow::updateAllowedFetchers()
 {
     allowed_fetchers.clear();
     auto allowed = configController.getAllowedFetchers();
+    if (allowed.isEmpty())
+        return;
     for (auto& f : all_fetchers) {
         auto isAllowed = allowed.constFind(f->getFullName());
         if (isAllowed != allowed.constEnd()

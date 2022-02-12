@@ -25,7 +25,7 @@
 #include "updatemanager.h"
 #include "statisticsmanager.h"
 
-#define VERSION "v1.2.0"
+#define VERSION "v1.2.1"
 
 namespace Ui {
 class MainWindow;

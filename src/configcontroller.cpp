@@ -158,22 +158,24 @@ void ConfigController::setAccountId(const QString &accountId)
 
 void ConfigController::setAllowedFetchers(QMap<QString, bool> map)
 {
-    QJsonArray array;
+    QJsonObject obj;
     QMapIterator<QString, bool> it(map);
     while (it.hasNext()) {
         it.next();
-        array.append(QJsonObject {{it.key(), it.value()}});
+        obj.insert(it.key(), it.value());
     }
-    commonSettings["allowedFetchers"] = array;
+    commonSettings["allowedFetchers"] = obj;
 }
 
 QMap<QString, bool> ConfigController::getAllowedFetchers()
 {
     QMap<QString, bool> fetchers;
-    for (auto&& f : commonSettings["allowedFetchers"].toArray()) {
-        auto it = f.toObject().constBegin();
-        if (it->isNull()) continue;
-        fetchers.insert(it.key(), it.value().toBool());
+    if (!commonSettings["allowedFetchers"].isObject())
+         return fetchers;
+
+    auto obj = commonSettings["allowedFetchers"].toObject();
+    for (auto& key : obj.keys()) {
+        fetchers.insert(key, obj[key].toBool());
     }
     return fetchers;
 }
