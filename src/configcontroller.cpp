@@ -17,6 +17,8 @@ void ConfigController::read(const QJsonObject &json)
     QJsonArray configArray = json["configs"].toArray();
     commonSettings.insert("userdataPath", json["userdata"]);
     commonSettings.insert("updateNotification", json["updateNotification"]);
+    if (json.constFind("allowedFetchers") != json.constEnd())
+        commonSettings.insert("allowedFetchers", json["allowedFetchers"]);
 
     for (int configIndex = 0; configIndex < configArray.size(); ++configIndex)
     {
@@ -40,6 +42,7 @@ void ConfigController::write(QJsonObject &json) const
     json["configs"] = configArray;
     json["userdata"] = commonSettings["userdataPath"];
     json["updateNotification"] = commonSettings["updateNotification"];
+    json["allowedFetchers"] = commonSettings["allowedFetchers"];
 }
 
 bool ConfigController::saveConfig() const
@@ -151,6 +154,28 @@ void ConfigController::setAccountId(const QString &accountId)
 {
     commonSettings.insert("accountId", accountId);
     choose(currentConfig->getFullName());
+}
+
+void ConfigController::setAllowedFetchers(QMap<QString, bool> map)
+{
+    QJsonArray array;
+    QMapIterator<QString, bool> it(map);
+    while (it.hasNext()) {
+        it.next();
+        array.append(QJsonObject {{it.key(), it.value()}});
+    }
+    commonSettings["allowedFetchers"] = array;
+}
+
+QMap<QString, bool> ConfigController::getAllowedFetchers()
+{
+    QMap<QString, bool> fetchers;
+    for (auto&& f : commonSettings["allowedFetchers"].toArray()) {
+        auto it = f.toObject().constBegin();
+        if (it->isNull()) continue;
+        fetchers.insert(it.key(), it.value().toBool());
+    }
+    return fetchers;
 }
 
 void ConfigController::setUpdateNotification(bool shown)

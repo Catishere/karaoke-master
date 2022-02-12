@@ -2,6 +2,8 @@
 #define CONFIGCONTROLLER_H
 
 #include <QFile>
+#include <QList>
+#include <QPair>
 #include <QString>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -30,6 +32,8 @@ public:
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
     void setAccountId(const QString &accountId);
+    void setAllowedFetchers(QMap<QString, bool> map);
+    QMap<QString, bool> getAllowedFetchers();
     void setUpdateNotification(bool shown);
     bool isUpdateNotification() const;
 
