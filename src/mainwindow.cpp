@@ -38,14 +38,9 @@ MainWindow::MainWindow(QWidget *parent) :
                      new LyricstranslateFetcher(this),
                      new MusixmatchFetcher(this) };
 
-    updateAllowedFetchers();
+    temp_search_list.resize(all_fetchers.size());
 
-    for (auto& fet : allowed_fetchers) {
-        connect(dynamic_cast<QObject*>(fet), SIGNAL(listReady(StringPairList)),
-                this, SLOT(lyricsListFetched(StringPairList)));
-        connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
-                this, SLOT(lyricsFetched(QString)));
-    }
+    updateAllowedFetchers();
 
     QDir root(".");
     root.mkdir("lyrics");
@@ -732,6 +727,8 @@ void MainWindow::on_actionOptions_triggered()
         return;
     }
 
+    //! TODO: Refactor these dialogs in separate class
+
     QDialog *dialog = new QDialog(this);
 
     QVBoxLayout *lytMain = new QVBoxLayout(dialog);
@@ -780,11 +777,17 @@ void MainWindow::on_actionOptions_triggered()
             button->setChecked(true);
     }
 
+    auto priorityButton = new QPushButton("Fetcher Priorty", this);
+
+    connect(priorityButton, &QPushButton::pressed,
+            this, [this, dialog](){ openFetcherPriorityDialog(dialog); });
+
     hbox->addStretch(1);
     fetchersGroupBox->setLayout(fetchersHbox);
     groupBox->setLayout(hbox);
     lytMain->addWidget(groupBox);
     lytMain->addWidget(fetchersGroupBox);
+    lytMain->addWidget(priorityButton);
     lytMain->addWidget(checkbox);
     lytMain->addWidget(buttonBox);
     dialog->setWindowTitle("Options");
@@ -819,6 +822,13 @@ void MainWindow::on_actionOptions_triggered()
 void MainWindow::allLyricsListsFetched()
 {
     fetchers_ready = 0;
+
+    for (auto& list : temp_search_list) {
+        search_list.append(list);
+    }
+
+    temp_search_list.clear();
+    temp_search_list.resize(all_fetchers.size());
 
     if (search_list.isEmpty()) {
         QMessageBox::information(this, "Lyrics",
@@ -881,12 +891,11 @@ void MainWindow::addListWithPriorty(const StringPairList &list)
         return;
     auto url = list.at(0).second;
 
-    if (url.startsWith(allowed_fetchers.at(0)->getEndpoint())) {
-        StringPairList copy(list);
-        copy.append(search_list);
-        search_list = copy;
-    } else
-        search_list.append(list);
+    for (int i = 0; i < allowed_fetchers.size(); ++i) {
+        if (url.startsWith(allowed_fetchers[i]->getEndpoint())) {
+            temp_search_list[i] = list;
+        }
+    }
 }
 
 void MainWindow::showUpdateNotification()
@@ -931,12 +940,56 @@ void MainWindow::updateAllowedFetchers()
     if (allowed.isEmpty())
         return;
     for (auto& f : all_fetchers) {
+        disconnect(dynamic_cast<QObject*>(f), nullptr,
+                   nullptr, nullptr);
         auto isAllowed = allowed.constFind(f->getFullName());
         if (isAllowed != allowed.constEnd()
             && isAllowed.value())
             allowed_fetchers.append(f);
     }
 
+    for (auto& fet : allowed_fetchers) {
+        connect(dynamic_cast<QObject*>(fet), SIGNAL(listReady(StringPairList)),
+                this, SLOT(lyricsListFetched(StringPairList)));
+        connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
+                this, SLOT(lyricsFetched(QString)));
+    }
+}
+
+void MainWindow::openFetcherPriorityDialog(QWidget *parent)
+{
+    QDialog *dialog = new QDialog(parent);
+    QVBoxLayout *lytMain = new QVBoxLayout(dialog);
+
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
+                                                       QDialogButtonBox::Close);
+    QListWidget *lw = new QListWidget(dialog);
+    for (auto fetcher : all_fetchers)
+        lw->addItem(new QListWidgetItem(fetcher->getFullName()));
+    lw->setDragDropMode(QAbstractItemView::InternalMove);
+    lytMain->addWidget(lw);
+    lytMain->addWidget(buttonBox);
+    dialog->setWindowTitle("Fetcher priority");
+    dialog->setLayout(lytMain);
+
+    connect(buttonBox, &QDialogButtonBox::accepted,
+            this, [=]() {
+        for(int i = 0; i < lw->count(); ++i)
+        {
+            auto item = lw->item(i);
+            for (int j = 0; j < all_fetchers.size(); ++j) {
+                auto fetcher = all_fetchers.at(j);
+                if (fetcher->getFullName() == item->text())
+                    all_fetchers.swapItemsAt(i, j);
+            }
+        }
+        dialog->close();
+    });
+
+    connect(buttonBox, &QDialogButtonBox::rejected,
+            this, [=]() { dialog->close(); });
+
+    dialog->exec();
 }
 
 void MainWindow::lyricsListFetched(const StringPairList &list)

@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QListWidget>
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QRegularExpression>
@@ -58,6 +59,7 @@ private:
     void addListWithPriorty(const StringPairList &list);
     void showUpdateNotification();
     void updateAllowedFetchers();
+    void openFetcherPriorityDialog(QWidget *parent = nullptr);
 
 private slots:
 
@@ -95,6 +97,7 @@ private:
     QString dl_file_name;
     QString search_string;
     StringPairList search_list;
+    QList<StringPairList> temp_search_list;
     QFile tracklist;
     QFile dest;
     QTimer* timer;
