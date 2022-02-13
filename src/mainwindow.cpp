@@ -727,96 +727,11 @@ void MainWindow::on_actionOptions_triggered()
         return;
     }
 
-    //! TODO: Refactor these dialogs in separate class
-
-    QDialog *dialog = new QDialog(this);
-
-    QVBoxLayout *lytMain = new QVBoxLayout(dialog);
-    QHBoxLayout *hbox = new QHBoxLayout();
-    QHBoxLayout *fetchersHbox = new QHBoxLayout();
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
-                                                       QDialogButtonBox::Close);
-
-    QCheckBox *checkbox = new QCheckBox("Always download song", dialog);
-    QGroupBox *groupBox = new QGroupBox(tr("Your PC speed"), dialog);
-    QGroupBox *fetchersGroupBox = new QGroupBox(tr("Allow Fetchers"), dialog);
-    QList<QRadioButton *> buttons = {
-        new QRadioButton(tr("Potato"), dialog),
-        new QRadioButton(tr("Slow"), dialog),
-        new QRadioButton(tr("Average"), dialog),
-        new QRadioButton(tr("Fast"), dialog),
-        new QRadioButton(tr("Alien"), dialog)
-    };
-
-    QString currentPC = config->getPc();
-    checkbox->setChecked(config->getAlwaysDownload());
-    QMap<QString, bool> configFetcherList;
-
-    if (configController.getAllowedFetchers().isEmpty())
-    {
-        QMap<QString, bool> map;
-        for (auto& f : all_fetchers) {
-            map.insert(f->getFullName(), true);
-        }
-        configController.setAllowedFetchers(map);
-        configController.saveConfig();
-        configFetcherList = map;
-    } else
-        configFetcherList = configController.getAllowedFetchers();
-
-    for (auto& f : all_fetchers) {
-        auto cb = new QCheckBox(f->getFullName());
-        cb->setChecked(configFetcherList.find(f->getFullName()).value());
-        fetchersHbox->addWidget(cb);
-    }
-
-    for (auto button : buttons) {
-        hbox->addWidget(button);
-        if (button->text() == currentPC)
-            button->setChecked(true);
-    }
-
-    auto priorityButton = new QPushButton("Fetcher Priorty", this);
-
-    connect(priorityButton, &QPushButton::pressed,
-            this, [this, dialog](){ openFetcherPriorityDialog(dialog); });
-
-    hbox->addStretch(1);
-    fetchersGroupBox->setLayout(fetchersHbox);
-    groupBox->setLayout(hbox);
-    lytMain->addWidget(groupBox);
-    lytMain->addWidget(fetchersGroupBox);
-    lytMain->addWidget(priorityButton);
-    lytMain->addWidget(checkbox);
-    lytMain->addWidget(buttonBox);
-    dialog->setWindowTitle("Options");
-    dialog->setLayout(lytMain);
-
-    connect(buttonBox, &QDialogButtonBox::accepted, this, [=]() {
-        config->setAlwaysDownload(checkbox->isChecked());
-        QMap<QString, bool> cfgFetchers;
-        for (int i = 0; i < all_fetchers.size(); ++i) {
-            auto widget = static_cast<QCheckBox *>(fetchersHbox->itemAt(i)
-                                                   ->widget());
-            cfgFetchers.insert(widget->text(), widget->isChecked());
-        }
-        configController.setAllowedFetchers(cfgFetchers);
-        updateAllowedFetchers();
-
-        for (auto& button : buttons) {
-            if (button->isChecked()) {
-                config->setPc(button->text());
-            }
-        }
-        configController.saveConfig();
-        dialog->close();
-    });
-
-    connect(buttonBox, &QDialogButtonBox::rejected,
-            this, [=]() { dialog->close(); });
-
-    dialog->exec();
+    OptionsDialog *optionsDialog = new OptionsDialog(this, &configController,
+                                                     &all_fetchers);
+    connect(optionsDialog, &OptionsDialog::updateAllowedFetchers,
+            this, &MainWindow::updateAllowedFetchers);
+    optionsDialog->exec();
 }
 
 void MainWindow::allLyricsListsFetched()

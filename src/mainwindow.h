@@ -25,6 +25,7 @@
 #include "lyricstranslatefetcher.h"
 #include "updatemanager.h"
 #include "statisticsmanager.h"
+#include "optionsdialog.h"
 
 #define VERSION "v1.2.1"
 
