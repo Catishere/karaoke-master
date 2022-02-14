@@ -60,7 +60,6 @@ private:
     void addListWithPriorty(const StringPairList &list);
     void showUpdateNotification();
     void updateAllowedFetchers();
-    void openFetcherPriorityDialog(QWidget *parent = nullptr);
 
 private slots:
 

@@ -6,17 +6,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tableWidget->setColumnWidth(0, 40);
+    ui->tableWidget->setColumnWidth(1, 40);
     connect(ui->tableWidget, &QTableWidget::customContextMenuRequested,
             this, &MainWindow::showContextMenu);
 
     movie = new QMovie(":/loading.gif");
-    ui->loadingLabel->setVisible(false);
     movie->setScaledSize(QSize(300, 270));
+    ui->loadingLabel->setVisible(false);
     ui->loadingLabel->setMovie(movie);
-    ui->tableWidget->setColumnWidth(0, 40);
-    ui->tableWidget->setColumnWidth(1, 40);
 
     ui->progressBar->setVisible(false);
 
@@ -874,42 +875,6 @@ void MainWindow::updateAllowedFetchers()
         connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
                 this, SLOT(lyricsFetched(QString)));
     }
-}
-
-void MainWindow::openFetcherPriorityDialog(QWidget *parent)
-{
-    QDialog *dialog = new QDialog(parent);
-    QVBoxLayout *lytMain = new QVBoxLayout(dialog);
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
-                                                       QDialogButtonBox::Close);
-    QListWidget *lw = new QListWidget(dialog);
-    for (auto fetcher : all_fetchers)
-        lw->addItem(new QListWidgetItem(fetcher->getFullName()));
-    lw->setDragDropMode(QAbstractItemView::InternalMove);
-    lytMain->addWidget(lw);
-    lytMain->addWidget(buttonBox);
-    dialog->setWindowTitle("Fetcher priority");
-    dialog->setLayout(lytMain);
-
-    connect(buttonBox, &QDialogButtonBox::accepted,
-            this, [=]() {
-        for(int i = 0; i < lw->count(); ++i)
-        {
-            auto item = lw->item(i);
-            for (int j = 0; j < all_fetchers.size(); ++j) {
-                auto fetcher = all_fetchers.at(j);
-                if (fetcher->getFullName() == item->text())
-                    all_fetchers.swapItemsAt(i, j);
-            }
-        }
-        dialog->close();
-    });
-
-    connect(buttonBox, &QDialogButtonBox::rejected,
-            this, [=]() { dialog->close(); });
-
-    dialog->exec();
 }
 
 void MainWindow::lyricsListFetched(const StringPairList &list)

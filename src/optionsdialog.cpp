@@ -97,13 +97,13 @@ void OptionsDialog::openFetcherPriorityDialog()
 {
     QDialog *dialog = new QDialog(this);
     QVBoxLayout *lytMain = new QVBoxLayout(dialog);
-
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                                        QDialogButtonBox::Close);
     QListWidget *lw = new QListWidget(dialog);
     for (auto fetcher : *all_fetchers)
         lw->addItem(new QListWidgetItem(fetcher->getFullName()));
     lw->setDragDropMode(QAbstractItemView::InternalMove);
+    lytMain->addWidget(new QLabel("Drag and drop items to reorder", this));
     lytMain->addWidget(lw);
     lytMain->addWidget(buttonBox);
     dialog->setWindowTitle("Fetcher priority");

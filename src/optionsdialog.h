@@ -2,6 +2,7 @@
 #define OPTIONSDIALOG_H
 
 #include <QObject>
+#include <QLabel>
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
