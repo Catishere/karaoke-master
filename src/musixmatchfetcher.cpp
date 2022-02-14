@@ -39,6 +39,12 @@ void MusixmatchFetcher::lyricsFetched(QNetworkReply *reply)
     qDebug() << "MM lyrics fetched!";
     QString lyrics;
     QByteArray page = reply->readAll();
+    reply->deleteLater();
+
+    if (page.contains("Lyrics not available.")) {
+        emit lyricsReady("");
+        return;
+    }
 
     int start = page.indexOf(START_TOKEN) + sizeof(START_TOKEN) - 1;
     start = page.indexOf(">", start) + 1;
@@ -57,7 +63,6 @@ void MusixmatchFetcher::lyricsFetched(QNetworkReply *reply)
     lyrics.replace("&nbsp;", "\n");
     lyrics = lyrics.trimmed();
     emit lyricsReady(lyrics);
-    reply->deleteLater();
 }
 
 void MusixmatchFetcher::listFetched(QNetworkReply *reply)

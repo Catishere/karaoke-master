@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     movie = new QMovie(":/loading.gif");
     ui->loadingLabel->setVisible(false);
-    movie->setScaledSize(QSize(300, 280));
+    movie->setScaledSize(QSize(300, 270));
     ui->loadingLabel->setMovie(movie);
     ui->tableWidget->setColumnWidth(0, 40);
     ui->tableWidget->setColumnWidth(1, 40);
@@ -67,6 +67,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*
+ * TODO: Needs refactoring
+ */
 bool MainWindow::refreshSongList()
 {
     ui->tableWidget->clearContents();
@@ -86,7 +89,7 @@ bool MainWindow::refreshSongList()
         if (!name.endsWith("txt"))
             continue;
 
-        name = name.left(name.size() - 4);
+        name.chop(4);
 
         QTableWidgetItem *lyrics_checkbox = new QTableWidgetItem("Yes");
         QTableWidgetItem *song_checkbox = new QTableWidgetItem("No");
@@ -412,10 +415,12 @@ void MainWindow::on_searchOnlineButton_clicked()
 
     if (ok && !text.isEmpty())
     {
-        // Fetch list
-        for (auto &fetcher : allowed_fetchers) {
+        movie->start();
+        ui->loadingLabel->setVisible(true);
+
+        for (auto &fetcher : allowed_fetchers)
             fetcher->fetchList(text);
-        }
+
         search_string = "";
     }
 }
@@ -454,17 +459,13 @@ void MainWindow::songCooked()
     movie->stop();
     ui->loadingLabel->setVisible(false);
 
-    QString text;
     if (success)
     {
-        text = "Song Downloaded!";
         QTimer::singleShot(100, this, &MainWindow::on_startButton_clicked);
         QTimer::singleShot(200, this, &MainWindow::on_startButton_clicked);
     }
     else
-        text = "Song Failed to download!";
-
-    QMessageBox::information(this, "Song Download", text);
+        QMessageBox::warning(this, "Song Download", "Song Failed to download!");
 
     refreshSongList();
 }
@@ -681,25 +682,26 @@ void MainWindow::on_actionKey_bindings_triggered()
 void MainWindow::showContextMenu(const QPoint &pos)
 {
     QMenu contextMenu(tr("Context menu"), ui->tableWidget);
+    QList<QAction*> actions = {
+        new QAction("Delete selected songs", ui->tableWidget),
+        new QAction("Add song with lyrics", ui->tableWidget),
+        new QAction("Add song without lyrics", ui->tableWidget),
+        new QAction("Add song from local folder", ui->tableWidget)
+    };
 
-    QAction action("Delete selected songs", ui->tableWidget);
-    QAction action2("Add song with lyrics", ui->tableWidget);
-    QAction action3("Add song without lyrics", ui->tableWidget);
-    QAction action4("Add song from local folder", ui->tableWidget);
+    auto actionSlots = QList {
+        &MainWindow::on_deleteSongButton_clicked,
+        &MainWindow::on_searchOnlineButton_clicked,
+        &MainWindow::on_youtubeButton_clicked,
+        &MainWindow::on_addSongButton_clicked
+    };
 
-    connect(&action, &QAction::triggered,
-            this, &MainWindow::on_deleteSongButton_clicked);
-    connect(&action2, &QAction::triggered,
-            this, &MainWindow::on_searchOnlineButton_clicked);
-    connect(&action3, &QAction::triggered,
-            this, &MainWindow::on_youtubeButton_clicked);
-    connect(&action4, &QAction::triggered,
-            this, &MainWindow::on_addSongButton_clicked);
+    for (int i = 0; i < actions.size(); ++i) {
+        connect(actions.at(i), &QAction::triggered,
+                this, actionSlots[i]);
+        contextMenu.addAction(actions[i]);
+    }
 
-    contextMenu.addAction(&action);
-    contextMenu.addAction(&action2);
-    contextMenu.addAction(&action3);
-    contextMenu.addAction(&action4);
     contextMenu.exec(ui->tableWidget->pos() + mapToGlobal(pos) + QPoint(0, 45));
 }
 
@@ -737,6 +739,9 @@ void MainWindow::on_actionOptions_triggered()
 void MainWindow::allLyricsListsFetched()
 {
     fetchers_ready = 0;
+
+    movie->stop();
+    ui->loadingLabel->setVisible(false);
 
     for (auto& list : temp_search_list) {
         search_list.append(list);
@@ -917,6 +922,12 @@ void MainWindow::lyricsListFetched(const StringPairList &list)
 
 void MainWindow::lyricsFetched(const QString& lyrics)
 {
+    if (lyrics.isEmpty()) {
+        QMessageBox::warning(this, "Lyrics failed",
+                              "The lyrics are empty, try with another source");
+        temp_lyrics_name = "";
+        return;
+    }
     qDebug() << "Saving lyrics...";
     QFile lyrics_file;
 
