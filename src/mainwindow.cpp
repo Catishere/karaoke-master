@@ -742,25 +742,24 @@ void MainWindow::allLyricsListsFetched()
     connect(buttonBox, &QDialogButtonBox::accepted, this, [=](){
         QString item = comboBox->currentText();
         qsizetype item_index = comboBox->currentIndex();
-        if (!item.isEmpty())
-        {
-            if (!temp_lyrics_name.isEmpty()) {
-                ui->err->setText("Aborted. Another download in progress.");
-                return;
-            }
 
-            temp_lyrics_name = item;
-
-            for (auto &fetcher : allowed_fetchers)
-                fetcher->fetchLyrics(search_list.at(item_index).second);
-
-            search_list.clear();
-
-            if (configController.getCurrentConfigRef()->getAlwaysDownload()
-                || QMessageBox::question(this,"Download song?","Download song?",
-                   QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-                downloadSongYoutube(item);
+        if (item.isEmpty()) {
+            dialog->close();
+            return;
         }
+
+        temp_lyrics_name = item;
+
+        for (auto &fetcher : allowed_fetchers)
+            fetcher->fetchLyrics(search_list.at(item_index).second);
+
+        search_list.clear();
+
+        if (configController.getCurrentConfigRef()->getAlwaysDownload()
+            || QMessageBox::question(this, "Download song?", "Download song?",
+               QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+            downloadSongYoutube(item);
+
         dialog->close();
     });
 
@@ -856,7 +855,6 @@ void MainWindow::lyricsFetched(const QString& lyrics)
     if (lyrics.isEmpty()) {
         QMessageBox::warning(this, "Lyrics failed",
                               "The lyrics are empty, try with another source");
-        temp_lyrics_name = "";
         return;
     }
     qDebug() << "Saving lyrics...";
@@ -876,8 +874,6 @@ void MainWindow::lyricsFetched(const QString& lyrics)
         qDebug() << lyrics_file.errorString();
 
     refreshSongList();
-
-    temp_lyrics_name = "";
 }
 
 void MainWindow::downloadProgress(qint64 ist, qint64 max)
