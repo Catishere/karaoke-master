@@ -68,74 +68,41 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/*
- * TODO: Needs refactoring
- */
-bool MainWindow::refreshSongList()
+void MainWindow::refreshSongList()
 {
-    ui->tableWidget->clearContents();
+    auto lyrics = QDir("lyrics").entryList(QStringList("*.txt"), QDir::Files);
+    auto songs = QDir("songs").entryList(QStringList("*.wav"), QDir::Files);
+    auto table = ui->tableWidget;
 
-    QDir dir("lyrics");
-    QStringList lyrics = dir.entryList(QDir::Files);
+    int shared = 0;
+    for (auto& lyric : lyrics)
+        if (songs.contains(lyric.chopped(4) + ".wav"))
+            shared++;
 
-    QDir song_dir("songs");
-    QStringList songs = song_dir.entryList(QDir::Files);
-
-    ui->tableWidget->setRowCount(lyrics.size() + songs.size());
+    table->clearContents();
+    table->setRowCount(lyrics.size() + songs.size() - shared);
 
     for (int i = 0; i < lyrics.size(); i++)
     {
-        QString name = lyrics.at(i);
+        QString name = lyrics.at(i).chopped(4);
+        auto hasSong = QFileInfo::exists("songs/" + name + ".wav") ? "Yes":"No";
 
-        if (!name.endsWith("txt"))
-            continue;
-
-        name.chop(4);
-
-        QTableWidgetItem *lyrics_checkbox = new QTableWidgetItem("Yes");
-        QTableWidgetItem *song_checkbox = new QTableWidgetItem("No");
-        ui->tableWidget->setItem(i, 1, lyrics_checkbox);
-
-        if (QFileInfo::exists("songs/" + name + ".wav"))
-        {
-            song_checkbox->setText("Yes");
-            ui->tableWidget->setRowCount(ui->tableWidget->rowCount() - 1);
-        }
-
-        ui->tableWidget->setItem(i, 0, song_checkbox);
-        ui->tableWidget->setItem(i, 2, new QTableWidgetItem(name));
+        table->setItem(i, 0, new QTableWidgetItem(hasSong));
+        table->setItem(i, 1, new QTableWidgetItem("Yes"));
+        table->setItem(i, 2, new QTableWidgetItem(name));
     }
 
-    int song_pos = lyrics.size();
+    int index = lyrics.size();
 
-    for (int i = 0; i < songs.size(); i++)
+    for (auto& song_raw : songs)
     {
-        QString name = songs.at(i);
-
-        if (!name.endsWith(".wav"))
-        {
-            ui->tableWidget->setRowCount(ui->tableWidget->rowCount() - 1);
-            song_pos--;
-            continue;
-        }
-
-        name = name.left(name.size() - 4);
-
-        if (!QFileInfo::exists("lyrics/" + name + ".txt"))
-        {
-            QTableWidgetItem *lyrics_checkbox = new QTableWidgetItem("No");
-            QTableWidgetItem *song_checkbox = new QTableWidgetItem("Yes");
-
-            ui->tableWidget->setItem(song_pos + i, 0, song_checkbox);
-            ui->tableWidget->setItem(song_pos + i, 1, lyrics_checkbox);
-            ui->tableWidget->setItem(song_pos + i, 2,
-                                     new QTableWidgetItem(name));
-        }
-        else
-            song_pos--;
+        QString song = song_raw.chopped(4);
+        if (lyrics.contains(song + ".txt")) continue;
+        table->setItem(index, 0, new QTableWidgetItem("Yes"));
+        table->setItem(index, 1, new QTableWidgetItem("No"));
+        table->setItem(index, 2, new QTableWidgetItem(song));
+        index++;
     }
-
-    return true;
 }
 
 bool MainWindow::createTracklistFile()
@@ -759,10 +726,9 @@ void MainWindow::allLyricsListsFetched()
 
     QDialog *dialog = new QDialog(this);
     QGridLayout *layout = new QGridLayout(dialog);
+    auto comboBox = new QComboBox(dialog);
     auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                           | QDialogButtonBox::Cancel);
-    auto comboBox = new QComboBox(dialog);
-
     for (auto &pair : search_list) {
         comboBox->addItem(QIcon(":icon/" + pair.first.right(2) + ".ico"),
                           pair.first.chopped(2));
@@ -792,7 +758,7 @@ void MainWindow::allLyricsListsFetched()
 
             if (configController.getCurrentConfigRef()->getAlwaysDownload()
                 || QMessageBox::question(this,"Download song?","Download song?",
-                   QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+                   QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
                 downloadSongYoutube(item);
         }
         dialog->close();

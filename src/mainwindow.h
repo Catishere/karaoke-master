@@ -43,7 +43,7 @@ public:
     bool createTracklistFile();
     bool addSongToConfig(const QString &filename, const QString &id);
     bool createSongIndex(const QString &id);
-    bool refreshSongList();
+    void refreshSongList();
     void getPage(const QString &url);
     void handleYTDLUpdateResponse(Response response);
     void downloadSongYoutube(QString &song_name);
