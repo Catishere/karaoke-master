@@ -27,7 +27,7 @@
 #include "statisticsmanager.h"
 #include "optionsdialog.h"
 
-#define VERSION "v1.2.2"
+#define VERSION "v1.2.3"
 
 namespace Ui {
 class MainWindow;
