@@ -177,6 +177,15 @@ bool MainWindow::createSongIndex(const QString &id)
 
 void MainWindow::on_directoryButton_clicked()
 {
+    if (configController.getConfigEntries().isEmpty()) {
+        auto reply = QMessageBox::question(this, "Automatic game finder",
+                              "It's your first time adding configs, do you want"
+                              " the app to find the games automatically?");
+        if (reply == QMessageBox::StandardButton::Yes) {
+            on_actionFind_games_triggered();
+            return;
+        }
+    }
     QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                             "/",
                                             QFileDialog::ShowDirsOnly
