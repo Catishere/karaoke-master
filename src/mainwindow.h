@@ -61,6 +61,7 @@ private:
     void addListWithPriorty(const StringPairList &list);
     void showUpdateNotification();
     void updateAllowedFetchers();
+    void connectUi();
 
 private slots:
 
@@ -71,24 +72,23 @@ private slots:
     void lyricsFetched(const QString& lyrics);
     void downloadProgress(qint64 ist, qint64 max);
 
-    void on_directoryButton_clicked();
-    void on_refreshButton_clicked();
-    void on_startButton_clicked();
-    void on_addSongButton_clicked();
-    void on_deleteSongButton_clicked();
-    void on_searchOnlineButton_clicked();
-    void on_youtubeButton_clicked();
-    void on_dropList_textActivated(const QString &arg1);
-    void on_tsayCheckBox_stateChanged(int arg1);
-    void on_actionUpdate_YTDL_triggered();
-    void on_actionUpdate_account_info_triggered();
-    void on_actionAbout_triggered();
-    void on_actionGuide_triggered();
-    void on_actionUpdate_client_triggered();
-    void on_actionKey_bindings_triggered();
-    void on_actionOptions_triggered();
-
-    void on_actionFind_games_triggered();
+    void directoryClicked();
+    void refreshClicked();
+    void startClicked();
+    void addSongClicked();
+    void deleteSongClicked();
+    void searchOnlineClicked();
+    void youtubeClicked();
+    void dropListChanged(const QString &arg1);
+    void tsayChanged(int arg1);
+    void updatedYTDLTriggered();
+    void updateAccountTriggered();
+    void aboutTriggered();
+    void guideTriggered();
+    void updateClientTriggered();
+    void keyBindingsTriggered();
+    void optionsTriggered();
+    void findGamesTriggered();
 
 private:
     Ui::MainWindow *ui;

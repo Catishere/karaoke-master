@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    connectUi();
     ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->setColumnWidth(0, 40);
@@ -175,14 +175,14 @@ bool MainWindow::createSongIndex(const QString &id)
     return true;
 }
 
-void MainWindow::on_directoryButton_clicked()
+void MainWindow::directoryClicked()
 {
     if (configController.getConfigEntries().isEmpty()) {
         auto reply = QMessageBox::question(this, "Automatic game finder",
                               "It's your first time adding configs, do you want"
                               " the app to find the games automatically?");
         if (reply == QMessageBox::StandardButton::Yes) {
-            on_actionFind_games_triggered();
+            findGamesTriggered();
             return;
         }
     }
@@ -206,7 +206,7 @@ void MainWindow::on_directoryButton_clicked()
                              "That is not valid source configuration folder.");
 }
 
-void MainWindow::on_refreshButton_clicked()
+void MainWindow::refreshClicked()
 {
     refreshSongList();
 }
@@ -279,7 +279,7 @@ void MainWindow::updateConfigSongList()
     dest.close();
 }
 
-void MainWindow::on_startButton_clicked()
+void MainWindow::startClicked()
 {
     if (ui->startButton->text() == "Start")
     {
@@ -303,7 +303,7 @@ void MainWindow::on_startButton_clicked()
     }
 }
 
-void MainWindow::on_addSongButton_clicked()
+void MainWindow::addSongClicked()
 {
     ui->err->setText("");
 
@@ -342,7 +342,7 @@ void MainWindow::handleYTDLUpdateResponse(Response response)
     ui->progressBar->setVisible(false);
 }
 
-void MainWindow::on_deleteSongButton_clicked()
+void MainWindow::deleteSongClicked()
 {
     ui->err->setText("");
 
@@ -378,7 +378,7 @@ void MainWindow::on_deleteSongButton_clicked()
     }
 }
 
-void MainWindow::on_searchOnlineButton_clicked()
+void MainWindow::searchOnlineClicked()
 {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Online Search"),
@@ -435,8 +435,8 @@ void MainWindow::songCooked()
 
     if (success)
     {
-        QTimer::singleShot(100, this, &MainWindow::on_startButton_clicked);
-        QTimer::singleShot(200, this, &MainWindow::on_startButton_clicked);
+        QTimer::singleShot(100, this, &MainWindow::startClicked);
+        QTimer::singleShot(200, this, &MainWindow::startClicked);
     }
     else
         QMessageBox::warning(this, "Song Download", "Song Failed to download!");
@@ -473,7 +473,7 @@ void MainWindow::downloadSongYoutube(QString &song_name)
     process->start(program);
 }
 
-void MainWindow::on_youtubeButton_clicked()
+void MainWindow::youtubeClicked()
 {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Youtube download"),
@@ -566,7 +566,7 @@ void MainWindow::updateAccount()
     configController.setAccountId(user.at(1));
 }
 
-void MainWindow::on_tsayCheckBox_stateChanged(int state)
+void MainWindow::tsayChanged(int state)
 {
     if (state)
         sayType = "say_team";
@@ -574,25 +574,25 @@ void MainWindow::on_tsayCheckBox_stateChanged(int state)
         sayType = "say";
 }
 
-void MainWindow::on_actionUpdate_YTDL_triggered()
+void MainWindow::updatedYTDLTriggered()
 {
     updateManager->updateYTDL();
 }
 
 
-void MainWindow::on_actionUpdate_account_info_triggered()
+void MainWindow::updateAccountTriggered()
 {
     updateAccount();
 }
 
 
-void MainWindow::on_actionAbout_triggered()
+void MainWindow::aboutTriggered()
 {
     QMessageBox::about(this, "About", "This is Karaoke master version " VERSION
                                       ". Made by Victor G.");
 }
 
-void MainWindow::on_actionGuide_triggered()
+void MainWindow::guideTriggered()
 {
     QMessageBox::information(this, "Guide",
     "Press 'Choose config' and choose your game cfg folder to begin.<br>"
@@ -602,7 +602,7 @@ void MainWindow::on_actionGuide_triggered()
     "<a href='https://github.com/Catishere/karaoke-master'>here</a>.");
 }
 
-void MainWindow::on_actionUpdate_client_triggered()
+void MainWindow::updateClientTriggered()
 {
     if (QFileInfo::exists("karaoke-master-update.exe")) {
         auto const conn = new QMetaObject::Connection;
@@ -635,7 +635,7 @@ void MainWindow::on_actionUpdate_client_triggered()
 }
 
 
-void MainWindow::on_actionKey_bindings_triggered()
+void MainWindow::keyBindingsTriggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
@@ -664,10 +664,10 @@ void MainWindow::showContextMenu(const QPoint &pos)
     };
 
     auto actionSlots = QList {
-        &MainWindow::on_deleteSongButton_clicked,
-        &MainWindow::on_searchOnlineButton_clicked,
-        &MainWindow::on_youtubeButton_clicked,
-        &MainWindow::on_addSongButton_clicked
+        &MainWindow::deleteSongClicked,
+        &MainWindow::searchOnlineClicked,
+        &MainWindow::youtubeClicked,
+        &MainWindow::addSongClicked
     };
 
     for (int i = 0; i < actions.size(); ++i) {
@@ -694,7 +694,7 @@ int MainWindow::getTimerInterval(const QString pc)
     return 500;
 }
 
-void MainWindow::on_actionOptions_triggered()
+void MainWindow::optionsTriggered()
 {
     auto config = configController.getCurrentConfigRef();
     if (config == nullptr) {
@@ -819,7 +819,7 @@ void MainWindow::showUpdateNotification()
                                            QMessageBox::Yes | QMessageBox::No,
                                            QMessageBox::Yes);
         if (reply == QMessageBox::Yes)
-            on_actionUpdate_client_triggered();
+            updateClientTriggered();
     });
 
     updateManager->getUpdateInfo();
@@ -846,6 +846,44 @@ void MainWindow::updateAllowedFetchers()
         connect(dynamic_cast<QObject*>(fet), SIGNAL(lyricsReady(QString)),
                 this, SLOT(lyricsFetched(QString)));
     }
+}
+
+void MainWindow::connectUi()
+{
+    connect(ui->directoryButton, &QPushButton::clicked,
+            this, &MainWindow::directoryClicked);
+    connect(ui->refreshButton, &QPushButton::clicked,
+            this, &MainWindow::refreshClicked);
+    connect(ui->startButton, &QPushButton::clicked,
+            this, &MainWindow::startClicked);
+    connect(ui->addSongButton, &QPushButton::clicked,
+            this, &MainWindow::addSongClicked);
+    connect(ui->deleteSongButton, &QPushButton::clicked,
+            this, &MainWindow::deleteSongClicked);
+    connect(ui->searchOnlineButton, &QPushButton::clicked,
+            this, &MainWindow::searchOnlineClicked);
+    connect(ui->youtubeButton, &QPushButton::clicked,
+            this, &MainWindow::youtubeClicked);
+    connect(ui->dropList, &QComboBox::textActivated,
+            this, &MainWindow::dropListChanged);
+    connect(ui->tsayCheckBox, &QCheckBox::stateChanged,
+            this, &MainWindow::tsayChanged);
+    connect(ui->actionUpdate_YTDL, &QAction::triggered,
+            this, &MainWindow::updatedYTDLTriggered);
+    connect(ui->actionUpdate_account_info, &QAction::triggered,
+            this, &MainWindow::updateAccountTriggered);
+    connect(ui->actionAbout, &QAction::triggered,
+            this, &MainWindow::aboutTriggered);
+    connect(ui->actionGuide, &QAction::triggered,
+            this, &MainWindow::guideTriggered);
+    connect(ui->actionUpdate_client, &QAction::triggered,
+            this, &MainWindow::updateClientTriggered);
+    connect(ui->actionKey_bindings, &QAction::triggered,
+            this, &MainWindow::keyBindingsTriggered);
+    connect(ui->actionOptions, &QAction::triggered,
+            this, &MainWindow::optionsTriggered);
+    connect(ui->actionFind_games, &QAction::triggered,
+            this, &MainWindow::findGamesTriggered);
 }
 
 void MainWindow::lyricsListFetched(const StringPairList &list)
@@ -891,13 +929,13 @@ void MainWindow::downloadProgress(qint64 ist, qint64 max)
 }
 
 
-void MainWindow::on_dropList_textActivated(const QString &arg1)
+void MainWindow::dropListChanged(const QString &arg1)
 {
     configController.choose(arg1);
     refreshScriptPaths();
 }
 
-void MainWindow::on_actionFind_games_triggered()
+void MainWindow::findGamesTriggered()
 {
     QStringList gameDirs;
     QMap<QString, QString> games {
