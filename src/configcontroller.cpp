@@ -4,11 +4,12 @@ ConfigController::ConfigController()
 {
     loadConfig();
     currentConfig = nullptr;
-    foreach (const ConfigEntry &configEntry, configEntries)
-    {
+    for (const auto &configEntry : configEntries) {
         if (configEntry.getStatus())
             choose(configEntry.getFullName());
     }
+    if (currentConfig == nullptr && !configEntries.isEmpty())
+        choose(configEntries.first().getFullName());
 }
 
 void ConfigController::read(const QJsonObject &json)
