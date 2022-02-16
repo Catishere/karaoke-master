@@ -5,7 +5,7 @@ How to use:
 
 1. Download the zip file from releases.
 2. Run karaoke-master.exe.
-3. Press 'Choose config' and choose a source cfg folder (e.g. steamapps/common/Counter-Strike: Global Offensive/csgo/cfg).
+3. Press Menu->Find games or press 'Choose config' and choose a specific source cfg folder (e.g. steamapps/common/Counter-Strike Global Offensive/csgo/cfg).
 4. Set up your preferred key bindings from Settings menu.
 5. Press 'Song and lyrics' and choose a song by name (e.g. Metallica - Master of puppets).
 6. Search for your song in the drop-down menu if you cant find it try searching something else.
