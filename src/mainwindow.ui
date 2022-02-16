@@ -352,7 +352,7 @@
      <x>0</x>
      <y>0</y>
      <width>605</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">
@@ -362,6 +362,7 @@
     <addaction name="actionUpdate_YTDL"/>
     <addaction name="actionUpdate_account_info"/>
     <addaction name="actionUpdate_client"/>
+    <addaction name="actionFind_games"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -415,6 +416,11 @@
   <action name="actionOptions">
    <property name="text">
     <string>Options</string>
+   </property>
+  </action>
+  <action name="actionFind_games">
+   <property name="text">
+    <string>Find games</string>
    </property>
   </action>
  </widget>

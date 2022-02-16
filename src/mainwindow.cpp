@@ -177,27 +177,24 @@ bool MainWindow::createSongIndex(const QString &id)
 
 void MainWindow::on_directoryButton_clicked()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                             "/",
                                             QFileDialog::ShowDirsOnly
                                             | QFileDialog::DontResolveSymlinks);
+    if (path.isEmpty()) return;
 
-    if (!dir.isEmpty()
-            && (QDir(dir).dirName() == "cfg"
-                || QDir(dir).entryList().contains("config.cfg")))
+    QDir dir(path);
+    if (dir.dirName() == "cfg" || dir.entryList().contains("config.cfg"))
     {
         ui->startButton->setEnabled(true);
 
-        configController.addConfig(ConfigEntry(dir));
+        configController.addConfig(ConfigEntry(path));
         refreshScriptPaths();
         loadDropListPaths();
         QTimer::singleShot(200, this, [=](){updateAccount();});
-    }
-    else
-    {
+    } else
         QMessageBox::warning(this, "Config",
                              "That is not valid source configuration folder.");
-    }
 }
 
 void MainWindow::on_refreshButton_clicked()
@@ -889,5 +886,41 @@ void MainWindow::on_dropList_textActivated(const QString &arg1)
 {
     configController.choose(arg1);
     refreshScriptPaths();
+}
+
+void MainWindow::on_actionFind_games_triggered()
+{
+    QStringList gameDirs;
+    QMap<QString, QString> games {
+        { "Half-Life",                       "/cstrike" },
+        { "Half-Life 2",                     "/hl2/cfg" },
+        { "Counter-Strike Global Offensive", "/csgo/cfg" },
+        { "GarrysMod",                       "/garrysmod/cfg" },
+        { "Counter-Strike Source",           "/cstrike/cfg" },
+    };
+
+    for (auto& drive : QDir::drives()) {
+        auto dir = QDir(drive.absolutePath() + STEAMAPPS);
+        if (!dir.exists()) continue;
+        for (auto& e : dir.entryInfoList(QDir::AllEntries
+                                         | QDir::NoDotAndDotDot)) {
+            if (games.contains(e.fileName()))
+                gameDirs.append(e.absoluteFilePath() + games[e.fileName()]);
+        }
+    }
+
+    if (gameDirs.isEmpty()) {
+        QMessageBox::warning(this, "No games found", "No games were found");
+        return;
+    }
+
+    for (auto& dir : gameDirs)
+        configController.addConfig(ConfigEntry(dir));
+
+    QMessageBox::information(this, "Games found", "Your games were loaded");
+    ui->startButton->setEnabled(true);
+    refreshScriptPaths();
+    loadDropListPaths();
+    QTimer::singleShot(200, this, [=](){updateAccount();});
 }
 

@@ -80,6 +80,11 @@ bool ConfigController::loadConfig()
 
 void ConfigController::addConfig(const ConfigEntry &configEntry)
 {
+    for (auto& entry : configEntries) {
+        if (entry.getPath() == configEntry.getPath())
+            return;
+    }
+
     configEntries.prepend(configEntry);
     choose(configEntry.getFullName());
     saveConfig();

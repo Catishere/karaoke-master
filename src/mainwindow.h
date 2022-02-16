@@ -28,6 +28,7 @@
 #include "optionsdialog.h"
 
 #define VERSION "v1.2.3"
+#define STEAMAPPS "Program Files (x86)/Steam/steamapps/common"
 
 namespace Ui {
 class MainWindow;
@@ -86,6 +87,8 @@ private slots:
     void on_actionUpdate_client_triggered();
     void on_actionKey_bindings_triggered();
     void on_actionOptions_triggered();
+
+    void on_actionFind_games_triggered();
 
 private:
     Ui::MainWindow *ui;
