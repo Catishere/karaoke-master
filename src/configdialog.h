@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
 #include <QListWidget>
+#include <QLabel>
 #include <QPushButton>
 
 #include "configcontroller.h"

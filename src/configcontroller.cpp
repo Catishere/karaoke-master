@@ -1,6 +1,7 @@
 #include "configcontroller.h"
 
-ConfigController::ConfigController()
+ConfigController::ConfigController(QObject *parent)
+    : QObject(parent)
 {
     loadConfig();
     currentConfig = nullptr;
@@ -21,8 +22,7 @@ void ConfigController::read(const QJsonObject &json)
     if (json.constFind("allowedFetchers") != json.constEnd())
         commonSettings.insert("allowedFetchers", json["allowedFetchers"]);
 
-    for (int configIndex = 0; configIndex < configArray.size(); ++configIndex)
-    {
+    for (int configIndex = 0; configIndex < configArray.size(); ++configIndex) {
         QJsonObject configObject = configArray[configIndex].toObject();
         ConfigEntry configEntry;
         configEntry.read(configObject);
@@ -89,12 +89,14 @@ void ConfigController::addConfig(const ConfigEntry &configEntry)
     configEntries.prepend(configEntry);
     choose(configEntry.getFullName());
     saveConfig();
+    emit listChanged();
 }
 
 void ConfigController::removeConfig(int index)
 {
     configEntries.removeAt(index);
     saveConfig();
+    emit listChanged();
 }
 
 void ConfigController::choose(const QString &full_name)
@@ -142,6 +144,11 @@ ConfigEntry* ConfigController::getCurrentConfigRef() const
 }
 
 QList<ConfigEntry> ConfigController::getConfigEntries() const
+{
+    return configEntries;
+}
+
+QList<ConfigEntry> &ConfigController::getConfigEntriesRef()
 {
     return configEntries;
 }

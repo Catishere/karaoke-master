@@ -14,6 +14,7 @@
 
 #include "lyricsfetcher.h"
 #include "configcontroller.h"
+#include "configdialog.h"
 
 class OptionsDialog : public QDialog
 {

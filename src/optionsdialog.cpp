@@ -52,10 +52,15 @@ OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
             button->setChecked(true);
     }
 
-    auto priorityButton = new QPushButton("Fetcher Priority", this);
+    auto priorityButton = new QPushButton("Fetcher priority", this);
+    auto manageConfigsButton = new QPushButton("Manage configs", this);
 
     connect(priorityButton, &QPushButton::pressed,
             this, &OptionsDialog::openFetcherPriorityDialog);
+
+    ConfigDialog *configDialog = new ConfigDialog(this, configCtrl);
+    connect(manageConfigsButton, &QPushButton::pressed,
+            configDialog, &ConfigDialog::show);
 
     hbox->addStretch(1);
     fetchersGroupBox->setLayout(fetchersHbox);
@@ -63,6 +68,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
     lytMain->addWidget(groupBox);
     lytMain->addWidget(fetchersGroupBox);
     lytMain->addWidget(priorityButton);
+    lytMain->addWidget(manageConfigsButton);
     lytMain->addWidget(checkbox);
     lytMain->addWidget(buttonBox);
     setWindowTitle("Options");

@@ -58,9 +58,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowIcon(QIcon(":/icon/favicon.ico"));
 
-//    ConfigDialog *configDialog = new ConfigDialog(this, &configController);
-//    configDialog->show();
-    stats.sendLaunch();
+    connect(&configController, &ConfigController::listChanged,
+            this, &MainWindow::loadDropListPaths);
+//    stats.sendLaunch();
 
     refreshSongList();
 }

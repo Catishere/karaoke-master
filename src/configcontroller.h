@@ -2,6 +2,7 @@
 #define CONFIGCONTROLLER_H
 
 #include <QFile>
+#include <QObject>
 #include <QList>
 #include <QPair>
 #include <QString>
@@ -11,11 +12,11 @@
 
 #include "configentry.h"
 
-class ConfigController
+class ConfigController : public QObject
 {
-
+    Q_OBJECT
 public:
-    ConfigController();
+    explicit ConfigController(QObject *parent = nullptr);
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
@@ -31,6 +32,7 @@ public:
     QString getUserDataPath() const;
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
+    QList<ConfigEntry> &getConfigEntriesRef();
     void setAccountId(const QString &accountId);
     void setAllowedFetchers(QMap<QString, bool> map);
     QMap<QString, bool> getAllowedFetchers();
@@ -41,6 +43,9 @@ private:
     ConfigEntry *currentConfig;
     QJsonObject commonSettings;
     QList<ConfigEntry> configEntries;
+
+signals:
+    void listChanged();
 };
 
 #endif // CONFIGCONTROLLER_H

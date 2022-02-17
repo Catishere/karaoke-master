@@ -2,16 +2,13 @@
 #define CONFIGLISTWIDGET_H
 
 #include <QListWidget>
-#include <QDragEnterEvent>
+#include <QDropEvent>
 
 class ConfigListWidget : public QListWidget
 {
     Q_OBJECT
 public:
     explicit ConfigListWidget(QWidget *parent = nullptr);
-
-protected:
-    void dragMoveEvent(QDragMoveEvent *e) override;
 };
 
 #endif // CONFIGLISTWIDGET_H

@@ -26,7 +26,6 @@
 #include "updatemanager.h"
 #include "statisticsmanager.h"
 #include "optionsdialog.h"
-#include "configdialog.h"
 
 #define VERSION "v1.2.4"
 #define STEAMAPPS "Program Files (x86)/Steam/steamapps/common"
