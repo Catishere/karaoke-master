@@ -97,22 +97,14 @@ void ConfigController::removeConfig(int index)
     saveConfig();
 }
 
-bool ConfigController::choose(const QString &full_name)
+void ConfigController::choose(const QString &full_name)
 {
-    bool ret = false;
-
-    for (int i = 0; i < configEntries.size(); i++)
-    {
-        ConfigEntry &configEntry = configEntries[i];
-
-        if (configEntry.getStatus())
-            configEntry.setStatus(false);
-
-        if (configEntry.getFullName() == full_name)
-        {
+    if (currentConfig)
+        currentConfig->setStatus(false);
+    for (auto& configEntry : configEntries) {
+        if (configEntry.getFullName() == full_name) {
             currentConfig = &configEntry;
             currentConfig->setStatus(true);
-            ret = true;
         }
     }
 
@@ -127,8 +119,6 @@ bool ConfigController::choose(const QString &full_name)
                           path.left(path.indexOf('/',
                                                  path.indexOf("common") + 8)));
     saveConfig();
-
-    return ret;
 }
 
 QString ConfigController::getUserDataPath() const

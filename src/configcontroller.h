@@ -22,7 +22,7 @@ public:
 
     bool loadConfig();
     bool saveConfig() const;
-    bool choose(const QString &full_name);
+    void choose(const QString &full_name);
 
     void addConfig(const ConfigEntry &configEntry);
     void removeConfig(int index);

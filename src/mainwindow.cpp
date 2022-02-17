@@ -58,6 +58,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setWindowIcon(QIcon(":/icon/favicon.ico"));
 
+//    ConfigDialog *configDialog = new ConfigDialog(this, &configController);
+//    configDialog->show();
     stats.sendLaunch();
 
     refreshSongList();
@@ -489,17 +491,14 @@ void MainWindow::youtubeClicked()
 void MainWindow::loadDropListPaths()
 {
     ui->dropList->clear();
-    foreach (const ConfigEntry &config, configController.getConfigEntries())
-    {
+    for (const auto& config : configController.getConfigEntries())
         ui->dropList->addItem(config.getFullName(), config.getName());
-    }
 
     int index = ui->dropList->findData(configController
                                        .getCurrentConfigRef()
                                        ->getName());
-    if ( index != -1 ) {
+    if ( index != -1 )
         ui->dropList->setCurrentIndex(index);
-    }
 }
 
 void MainWindow::refreshScriptPaths()

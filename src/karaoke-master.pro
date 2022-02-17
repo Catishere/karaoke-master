@@ -25,6 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    configdialog.cpp \
+    configlistwidget.cpp \
     geniuslyricsfetcher.cpp \
     inputdialog.cpp \
     keypressdialog.cpp \
@@ -39,6 +41,8 @@ SOURCES += \
     updatemanager.cpp
 
 HEADERS += \
+    configdialog.h \
+    configlistwidget.h \
     geniuslyricsfetcher.h \
     inputdialog.h \
     keypressdialog.h \
