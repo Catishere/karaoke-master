@@ -22,6 +22,9 @@ How to update the client:
 
 ## FAQ (I made that up I dont get any questions)
 
+Q: When I click to search any song the app hangs on the loading screen, why?\
+A: It's probably a firewall issue, run the app as administrator.
+
 Q: All music downloads are failing, how to fix this?\
 A: Press Update youtube-dl in the menu and hope for a miracle.
 
@@ -34,5 +37,5 @@ A: You can add the lyrics of a song that is missing in Genius.com, it will be av
 Q: I select my game's config folder but it still says it's not a valid folder, why?\
 A: You may need to create a file named "config.cfg" in this folder if you dont already have one (it's not needed in csgo anymore).
 
-Q: I'm rich and i want to give you money.
+Q: I'm rich and i want to give you money.\
 A: https://www.buymeacoffee.com/thecatishere
