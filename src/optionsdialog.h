@@ -21,7 +21,6 @@ class OptionsDialog : public QDialog
     Q_OBJECT
 
 private:
-    ConfigController *configController;
     QList<LyricsFetcher *> *all_fetchers;
 public:
     explicit OptionsDialog(QWidget *parent = nullptr,

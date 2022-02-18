@@ -2,9 +2,9 @@
 
 OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
                              QList<LyricsFetcher *> *all_fetchers)
-    :  QDialog(parent), configController(configCtrl), all_fetchers(all_fetchers)
+    :  QDialog(parent), all_fetchers(all_fetchers)
 {
-    auto config = configController->getCurrentConfigRef();
+    auto config = configCtrl->getCurrentConfig();
 
     QVBoxLayout *lytMain = new QVBoxLayout(this);
     QHBoxLayout *hbox = new QHBoxLayout();
@@ -28,17 +28,17 @@ OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
     checkbox->setChecked(config->getAlwaysDownload());
     QMap<QString, bool> configFetcherList;
 
-    if (configController->getAllowedFetchers().isEmpty())
+    if (configCtrl->getAllowedFetchers().isEmpty())
     {
         QMap<QString, bool> map;
         for (auto& f : *all_fetchers) {
             map.insert(f->getFullName(), true);
         }
-        configController->setAllowedFetchers(map);
-        configController->saveConfig();
+        configCtrl->setAllowedFetchers(map);
+        configCtrl->saveConfig();
         configFetcherList = map;
     } else
-        configFetcherList = configController->getAllowedFetchers();
+        configFetcherList = configCtrl->getAllowedFetchers();
 
     for (auto& f : *all_fetchers) {
         auto cb = new QCheckBox(f->getFullName());
@@ -82,7 +82,7 @@ OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
                                                    ->widget());
             cfgFetchers.insert(widget->text(), widget->isChecked());
         }
-        configController->setAllowedFetchers(cfgFetchers);
+        configCtrl->setAllowedFetchers(cfgFetchers);
         emit updateAllowedFetchers();
 
         for (auto& button : buttons) {
@@ -90,13 +90,12 @@ OptionsDialog::OptionsDialog(QWidget *parent, ConfigController *configCtrl,
                 config->setPc(button->text());
             }
         }
-        configController->saveConfig();
+        configCtrl->saveConfig();
         close();
     });
 
     connect(buttonBox, &QDialogButtonBox::rejected,
             this, [this]() { close(); });
-    deleteLater();
 }
 
 void OptionsDialog::openFetcherPriorityDialog()

@@ -31,9 +31,11 @@ void ConfigEntry::setAlwaysDownload(bool newAlwaysDownload)
 }
 
 ConfigEntry::ConfigEntry()
-{}
+{
+    name = "";
+}
 
-ConfigEntry::ConfigEntry(QString &path)
+ConfigEntry::ConfigEntry(QString path)
 {
     path.replace("\\","/");
     QStringList pathTokens = path.split("/");

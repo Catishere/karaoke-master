@@ -25,7 +25,7 @@ class ConfigEntry
 public:
 
     ConfigEntry();
-    ConfigEntry(QString &path);
+    ConfigEntry(QString path);
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;

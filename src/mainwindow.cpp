@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     fetchers_ready = 0;
     sayType = "say";
-    auto currentConfig = configController.getCurrentConfigRef();
+    auto currentConfig = configController.getCurrentConfig();
     timer_interval = (currentConfig) ? getTimerInterval(currentConfig->getPc()):
                                        200;
 
@@ -163,7 +163,7 @@ bool MainWindow::createSongIndex(const QString &id)
 {
     QChar relay_key = '=';
     QString compatWriteCfg = "host_writeconfig";
-    if (configController.getCurrentConfigRef()->getFullName() == "Half-Life")
+    if (configController.getCurrentConfig()->getFullName() == "Half-Life")
         compatWriteCfg = "writecfg";
 
     QString songname = ui->tableWidget->item(id.toInt() - 1, 2)->text();
@@ -200,6 +200,7 @@ void MainWindow::directoryClicked()
         ui->startButton->setEnabled(true);
 
         configController.addConfig(ConfigEntry(path));
+        configController.saveConfig();
         refreshScriptPaths();
         loadDropListPaths();
         QTimer::singleShot(200, this, [=](){updateAccount();});
@@ -230,7 +231,7 @@ void MainWindow::loadSong(int songid)
 void MainWindow::checkConfigFile()
 {
     QString ud = configController.getUserDataPath();
-    if (configController.getCurrentConfigRef()->getFullName() == "Half-Life")
+    if (configController.getCurrentConfig()->getFullName() == "Half-Life")
         ud = configController.getCurrentGamePath() + "/lyrics_trigger.cfg";
 
     if (QFileInfo::exists(ud))
@@ -249,7 +250,7 @@ void MainWindow::updateConfigSongList()
     tracklist.open(QIODevice::WriteOnly | QIODevice::Truncate);
     dest.open(QIODevice::WriteOnly | QIODevice::Truncate);
 
-    auto keys = configController.getCurrentConfigRef()->getKeyBindings();
+    auto keys = configController.getCurrentConfig()->getKeyBindings();
     QString voice_command;
     QString lyrics_command;
     for (auto& key : keys) {
@@ -495,15 +496,18 @@ void MainWindow::loadDropListPaths()
         ui->dropList->addItem(config.getFullName(), config.getName());
 
     int index = ui->dropList->findData(configController
-                                       .getCurrentConfigRef()
+                                       .getCurrentConfig()
                                        ->getName());
-    if ( index != -1 )
+    if (index != -1)
         ui->dropList->setCurrentIndex(index);
+
+    if (configController.getConfigEntriesRef().isEmpty())
+        ui->startButton->setDisabled(true);
 }
 
 void MainWindow::refreshScriptPaths()
 {
-    ConfigEntry *config = configController.getCurrentConfigRef();
+    ConfigEntry *config = configController.getCurrentConfig();
 
     tracklist.setFileName(config->getPath() + "/lyrics_list.cfg");
     dest.setFileName(config->getPath() + "/lyricsmaster.cfg");
@@ -636,7 +640,7 @@ void MainWindow::updateClientTriggered()
 
 void MainWindow::keyBindingsTriggered()
 {
-    auto config = configController.getCurrentConfigRef();
+    auto config = configController.getCurrentConfig();
     if (config == nullptr) {
         QMessageBox::warning(this, "Key bindings",
                              "Choose your game cfg folder first.");
@@ -695,7 +699,7 @@ int MainWindow::getTimerInterval(const QString pc)
 
 void MainWindow::optionsTriggered()
 {
-    auto config = configController.getCurrentConfigRef();
+    auto config = configController.getCurrentConfig();
     if (config == nullptr) {
         QMessageBox::warning(this, "Options",
                              "Choose your game cfg folder first.");
@@ -760,7 +764,7 @@ void MainWindow::allLyricsListsFetched()
 
         search_list.clear();
 
-        if (configController.getCurrentConfigRef()->getAlwaysDownload()
+        if (configController.getCurrentConfig()->getAlwaysDownload()
             || QMessageBox::question(this, "Download song?", "Download song?",
                QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
             downloadSongYoutube(item);
@@ -934,6 +938,21 @@ void MainWindow::dropListChanged(const QString &arg1)
     refreshScriptPaths();
 }
 
+QDir findFolder(const QDir dir, int depth) {
+    if (depth < 0)
+        return QDir("/");
+    for (const auto& folder : dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
+        if (folder == "Steam")
+            return dir;
+        auto newDir = findFolder(QDir(dir.path() + folder + '/'), depth - 1);
+        if (newDir.path() != "/") {
+            newDir.setPath(newDir.path() + STEAMAPPS);
+            return newDir;
+        }
+    }
+    return QDir("/");
+}
+
 void MainWindow::findGamesTriggered()
 {
     QStringList gameDirs;
@@ -946,8 +965,7 @@ void MainWindow::findGamesTriggered()
     };
 
     for (auto& drive : QDir::drives()) {
-        auto dir = QDir(drive.absolutePath() + STEAMAPPS);
-        if (!dir.exists()) continue;
+        auto dir = findFolder(QDir(drive.absolutePath()), 3);
         for (auto& e : dir.entryInfoList(QDir::AllEntries
                                          | QDir::NoDotAndDotDot)) {
             if (games.contains(e.fileName()))
@@ -962,6 +980,7 @@ void MainWindow::findGamesTriggered()
 
     for (auto& dir : gameDirs)
         configController.addConfig(ConfigEntry(dir));
+    configController.saveConfig();
 
     QMessageBox::information(this, "Games found", "Your games were loaded");
     ui->startButton->setEnabled(true);

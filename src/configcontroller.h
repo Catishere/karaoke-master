@@ -22,13 +22,12 @@ public:
     void write(QJsonObject &json) const;
 
     bool loadConfig();
-    bool saveConfig() const;
+    bool saveConfig();
     void choose(const QString &full_name);
 
     void addConfig(const ConfigEntry &configEntry);
     void removeConfig(int index);
-    ConfigEntry getCurrentConfig() const;
-    ConfigEntry* getCurrentConfigRef() const;
+    ConfigEntry* getCurrentConfig();
     QString getUserDataPath() const;
     QString getCurrentGamePath() const;
     QList<ConfigEntry> getConfigEntries() const;
@@ -40,7 +39,7 @@ public:
     bool isUpdateNotification() const;
 
 private:
-    ConfigEntry *currentConfig;
+    ConfigEntry currentConfig;
     QJsonObject commonSettings;
     QList<ConfigEntry> configEntries;
 

@@ -4,12 +4,11 @@ ConfigController::ConfigController(QObject *parent)
     : QObject(parent)
 {
     loadConfig();
-    currentConfig = nullptr;
     for (const auto &configEntry : configEntries) {
         if (configEntry.getStatus())
             choose(configEntry.getFullName());
     }
-    if (currentConfig == nullptr && !configEntries.isEmpty())
+    if (currentConfig.getName().isEmpty() && !configEntries.isEmpty())
         choose(configEntries.first().getFullName());
 }
 
@@ -46,7 +45,7 @@ void ConfigController::write(QJsonObject &json) const
     json["allowedFetchers"] = commonSettings["allowedFetchers"];
 }
 
-bool ConfigController::saveConfig() const
+bool ConfigController::saveConfig()
 {
     QFile saveFile(QStringLiteral("config/config.json"));
 
@@ -57,6 +56,7 @@ bool ConfigController::saveConfig() const
     QJsonDocument saveDoc(gameObject);
     saveFile.write(saveDoc.toJson());
     saveFile.close();
+    emit listChanged();
     return true;
 }
 
@@ -88,33 +88,31 @@ void ConfigController::addConfig(const ConfigEntry &configEntry)
 
     configEntries.prepend(configEntry);
     choose(configEntry.getFullName());
-    saveConfig();
-    emit listChanged();
 }
 
 void ConfigController::removeConfig(int index)
 {
     configEntries.removeAt(index);
-    saveConfig();
-    emit listChanged();
 }
 
 void ConfigController::choose(const QString &full_name)
 {
-    if (currentConfig)
-        currentConfig->setStatus(false);
+
+    if (configEntries.isEmpty())
+        return;
+
     for (auto& configEntry : configEntries) {
         if (configEntry.getFullName() == full_name) {
-            currentConfig = &configEntry;
-            currentConfig->setStatus(true);
-        }
+            configEntry.setStatus(true);
+            currentConfig = configEntry;
+        } else
+            configEntry.setStatus(false);
     }
 
-    QString path = currentConfig->getPath();
-    QString userpath = "/userdata/"
-            + commonSettings["accountId"].toString() +"/"
-            + currentConfig->getCode()
-            + "/local/cfg/lyrics_trigger.cfg";
+    QString path = currentConfig.getPath();
+    QString userpath = QString("/userdata/%1/%2/local/cfg/lyrics_trigger.cfg")
+                       .arg(commonSettings["accountId"].toString(),
+                            currentConfig.getCode());
     commonSettings.insert("userdataPath",
                           path.left(path.indexOf("/steamapps")) + userpath);
     commonSettings.insert("currentGamePath",
@@ -133,14 +131,9 @@ QString ConfigController::getCurrentGamePath() const
     return commonSettings["currentGamePath"].toString();
 }
 
-ConfigEntry ConfigController::getCurrentConfig() const
+ConfigEntry* ConfigController::getCurrentConfig()
 {
-    return *currentConfig;
-}
-
-ConfigEntry* ConfigController::getCurrentConfigRef() const
-{
-    return currentConfig;
+    return &currentConfig;
 }
 
 QList<ConfigEntry> ConfigController::getConfigEntries() const
@@ -156,7 +149,7 @@ QList<ConfigEntry> &ConfigController::getConfigEntriesRef()
 void ConfigController::setAccountId(const QString &accountId)
 {
     commonSettings.insert("accountId", accountId);
-    choose(currentConfig->getFullName());
+    choose(currentConfig.getFullName());
 }
 
 void ConfigController::setAllowedFetchers(QMap<QString, bool> map)

@@ -28,7 +28,7 @@
 #include "optionsdialog.h"
 
 #define VERSION "v1.2.5"
-#define STEAMAPPS "Program Files (x86)/Steam/steamapps/common"
+#define STEAMAPPS "/Steam/steamapps/common"
 
 namespace Ui {
 class MainWindow;
