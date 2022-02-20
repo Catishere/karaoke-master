@@ -21,8 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->progressBar->setVisible(false);
 
-    if (!configController.getConfigEntries().isEmpty())
-    {
+    if (!configController.getConfigEntries().isEmpty()) {
         ui->startButton->setEnabled(true);
         updateAccount();
         refreshScriptPaths();
@@ -84,8 +83,7 @@ void MainWindow::refreshSongList()
     table->clearContents();
     table->setRowCount(lyrics.size() + songs.size() - shared);
 
-    for (int i = 0; i < lyrics.size(); i++)
-    {
+    for (int i = 0; i < lyrics.size(); i++) {
         QString name = lyrics.at(i).chopped(4);
         auto hasSong = QFileInfo::exists("songs/" + name + ".wav") ? "Yes":"No";
 
@@ -96,8 +94,7 @@ void MainWindow::refreshSongList()
 
     int index = lyrics.size();
 
-    for (auto& song_raw : songs)
-    {
+    for (auto& song_raw : songs) {
         QString song = song_raw.chopped(4);
         if (lyrics.contains(song + ".txt")) continue;
         table->setItem(index, 0, new QTableWidgetItem("Yes"));
@@ -113,8 +110,7 @@ bool MainWindow::createTracklistFile()
     const char* border =
           "echo \"--------------------------------------------------------\"\n";
     list.append(border);
-    for (int i = 0; i < ui->tableWidget->rowCount(); i++)
-    {
+    for (int i = 0; i < ui->tableWidget->rowCount(); i++) {
         QString i_str = QString::number(i + 1);
         list.append("echo \"song"
                     + i_str + ": "
@@ -195,8 +191,7 @@ void MainWindow::directoryClicked()
     if (path.isEmpty()) return;
 
     QDir dir(path);
-    if (dir.dirName() == "cfg" || dir.entryList().contains("config.cfg"))
-    {
+    if (dir.dirName() == "cfg" || dir.entryList().contains("config.cfg")) {
         ui->startButton->setEnabled(true);
 
         configController.addConfig(ConfigEntry(path));
@@ -220,9 +215,7 @@ void MainWindow::loadSong(int songid)
     QString d = configController.getCurrentGamePath() + "/voice_input.wav";
 
     if (QFileInfo::exists(d))
-    {
         QFile::remove(d);
-    }
 
     if (!QFile::copy(s, d))
         ui->err->setText("Couldnt copy song to game folder");
@@ -234,8 +227,7 @@ void MainWindow::checkConfigFile()
     if (configController.getCurrentConfig()->getFullName() == "Half-Life")
         ud = configController.getCurrentGamePath() + "/lyrics_trigger.cfg";
 
-    if (QFileInfo::exists(ud))
-    {
+    if (QFileInfo::exists(ud)) {
         QFile f(ud);
         f.open(QIODevice::ReadOnly);
         QString cfg = f.readAll();
@@ -271,8 +263,7 @@ void MainWindow::updateConfigSongList()
                        "bind " + lyrics_command + " spamycs\n").toUtf8());
     createTracklistFile();
 
-    for (int i = 0; i < ui->tableWidget->rowCount(); i++)
-    {
+    for (int i = 0; i < ui->tableWidget->rowCount(); i++) {
         addSongToConfig(ui->tableWidget->item(i, 2)->text(),
                         QString::number(i + 1));
         createSongIndex(QString::number(i+1));
@@ -284,8 +275,7 @@ void MainWindow::updateConfigSongList()
 
 void MainWindow::startClicked()
 {
-    if (ui->startButton->text() == "Start")
-    {
+    if (ui->startButton->text() == "Start") {
         timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, &MainWindow::checkConfigFile);
         timer->start(200);
@@ -293,11 +283,9 @@ void MainWindow::startClicked()
         ui->startButton->setText("Stop");
         updateConfigSongList();
     }
-    else
-    {
+    else {
         QString gamepath = configController.getCurrentGamePath();
-        if (QFileInfo::exists(gamepath + "/voice_input.wav"))
-        {
+        if (QFileInfo::exists(gamepath + "/voice_input.wav")) {
             QFile rm(gamepath + "/voice_input.wav");
             rm.remove();
         }
@@ -314,8 +302,7 @@ void MainWindow::addSongClicked()
                                                    tr("Open Directory"),
                                                    "/",
                                                    tr("Text Files (*.txt)"));
-    for (int i = 0; i < songs_list.size(); i++)
-    {
+    for (int i = 0; i < songs_list.size(); i++) {
         QString song = songs_list.at(i);
         int pos = song.lastIndexOf(QChar('/'));
         QString song_newpath = "lyrics" + song.right(song.size() - pos);
@@ -366,14 +353,13 @@ void MainWindow::deleteSongClicked()
     reply = QMessageBox::question(this, "Delete songs", question_content,
                                   QMessageBox::Yes|QMessageBox::No);
 
-    if (reply == QMessageBox::Yes)
-    {
-        for (int i = 0; i < items.size()/3; i++)
-        {
+    if (reply == QMessageBox::Yes) {
+        for (int i = 0; i < items.size()/3; i++) {
             QString name = items.at(i * 3 + 2)->text();
-            if (QFileInfo::exists("lyrics/" + name + ".txt"))
-                if (!QFile::remove("lyrics/" + name + ".txt"))
-                    ui->err->setText("Permission error!");
+            if (QFileInfo::exists("lyrics/" + name + ".txt")
+                && !QFile::remove("lyrics/" + name + ".txt")) {
+                ui->err->setText("Permission error!");
+            }
             if (QFileInfo::exists("songs/" + name + ".wav"))
                 QFile::remove("songs/" + name + ".wav");
         }
@@ -390,8 +376,7 @@ void MainWindow::searchOnlineClicked()
                             QDir::home().dirName(), &ok);
     search_string = text;
 
-    if (ok && !text.isEmpty())
-    {
+    if (ok && !text.isEmpty()) {
         movie->start();
         ui->loadingLabel->setVisible(true);
 
@@ -415,15 +400,12 @@ void MainWindow::songCooked()
 
     bool success = false;
 
-    if (root.count() > 0)
-    {
+    if (root.count() > 0) {
         QStringList ffmpegsux = root.entryList();
 
-        for (int i = 0; i < ffmpegsux.size(); i++)
-        {
+        for (int i = 0; i < ffmpegsux.size(); i++) {
             QString filename = ffmpegsux.at(i);
-            if (filename.endsWith(".wav"))
-            {
+            if (filename.endsWith(".wav")) {
                 dl_file_name.replace(QChar(0x00A0), " ");
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
@@ -436,8 +418,7 @@ void MainWindow::songCooked()
     movie->stop();
     ui->loadingLabel->setVisible(false);
 
-    if (success)
-    {
+    if (success) {
         QTimer::singleShot(100, this, &MainWindow::startClicked);
         QTimer::singleShot(200, this, &MainWindow::startClicked);
     }
@@ -455,8 +436,7 @@ void MainWindow::downloadSongYoutube(QString &song_name)
 
     if (song_name.startsWith("https://"))
         search_str = song_name;
-    else
-    {
+    else {
         song_name.replace(QRegularExpression("[%.\\/: ]"), " ");
         search_str = "\"ytsearch: " + song_name + "\"";
     }
@@ -484,9 +464,7 @@ void MainWindow::youtubeClicked()
                                          QLineEdit::Normal,
                                          QDir::home().dirName(), &ok);
     if (ok && !text.isEmpty())
-    {
         downloadSongYoutube(text);
-    }
 }
 
 void MainWindow::loadDropListPaths()
@@ -516,8 +494,10 @@ void MainWindow::refreshScriptPaths()
 const QStringList MainWindow::getMostRecentUser() const
 {
     QString udpath = configController.getUserDataPath();
+
     if (udpath.isNull() || udpath.isEmpty())
         return QStringList();
+
     QString steamPath = udpath.left(udpath.indexOf("/Steam/") + 7);
     QString steamConfig = steamPath + "/config/loginusers.vdf";
     QFile steamConfigFile(steamConfig);
@@ -539,16 +519,14 @@ const QStringList MainWindow::getMostRecentUser() const
 
     QRegularExpressionMatchIterator i = regex.globalMatch(file_data);
 
-    while (true)
-    {
+    while (true) {
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
             QString steamid64 = match.captured("steamid64");
             QString username = match.captured("username");
             QString mostrecent = match.captured("mostrecent");
 
-            if (mostrecent == "1")
-            {
+            if (mostrecent == "1") {
                 qlonglong num = (steamid64.toLongLong() & 0xFFFFFFFF);
                 result << username << QString::number(num);
                 break;
@@ -571,10 +549,7 @@ void MainWindow::updateAccount()
 
 void MainWindow::tsayChanged(int state)
 {
-    if (state)
-        sayType = "say_team";
-    else
-        sayType = "say";
+    sayType = state ? "say_team" : "say";
 }
 
 void MainWindow::updatedYTDLTriggered()
@@ -912,8 +887,7 @@ void MainWindow::lyricsFetched(const QString& lyrics)
 
     lyrics_file.setFileName("lyrics/" + temp_lyrics_name + ".txt");
 
-    if (lyrics_file.open(QIODevice::WriteOnly))
-    {
+    if (lyrics_file.open(QIODevice::WriteOnly)) {
         lyrics_file.write(lyrics.toUtf8());
         lyrics_file.close();
     }
@@ -941,9 +915,11 @@ void MainWindow::dropListChanged(const QString &arg1)
 QDir findFolder(const QDir dir, int depth) {
     if (depth < 0)
         return QDir("/");
-    for (const auto& folder : dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
+    for (const auto& folder : dir.entryList(QDir::AllEntries
+                                            | QDir::NoDotAndDotDot)) {
         if (folder == "Steam")
             return dir;
+
         auto newDir = findFolder(QDir(dir.path() + folder + '/'), depth - 1);
         if (newDir.path() != "/") {
             newDir.setPath(newDir.path() + STEAMAPPS);
@@ -980,6 +956,7 @@ void MainWindow::findGamesTriggered()
 
     for (auto& dir : gameDirs)
         configController.addConfig(ConfigEntry(dir));
+
     configController.saveConfig();
 
     QMessageBox::information(this, "Games found", "Your games were loaded");
