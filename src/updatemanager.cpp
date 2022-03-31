@@ -36,8 +36,8 @@ void UpdateManager::YTDLLastReleaseFetched(QNetworkReply *reply)
 
     if (reply_url.startsWith("https://api.github.com")) {
         QByteArray data = reply->readAll();
-        QRegularExpression regex("https:..github.com.yt-dlp.yt-dlp.releases.dow"
-                                 "nload.\\d{4,4}\\.\\d\\d\\.\\d\\d.yt-dlp.exe");
+        QRegularExpression regex("https:..github.com.yt-dlp.yt-dlp.releases"
+                                 ".download.+?yt-dlp.exe");
         QString dl_url = regex.match(data).captured(0);
 
         QFile ytdlv("ytdl_link.txt");
