@@ -27,7 +27,7 @@
 #include "statisticsmanager.h"
 #include "optionsdialog.h"
 
-#define VERSION "v1.2.7"
+#define VERSION "v1.2.8"
 #define STEAMAPPS "/Steam/steamapps/common"
 
 namespace Ui {
