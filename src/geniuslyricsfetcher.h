@@ -19,6 +19,6 @@ signals:
 private slots:
     void lyricsFetched(QNetworkReply *reply) override;
     void listFetched(QNetworkReply *reply) override;
-    };
+};
 
 #endif // GENIUSLYRICSFETCHER_H

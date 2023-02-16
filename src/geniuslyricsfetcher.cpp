@@ -41,20 +41,24 @@ void GeniusLyricsFetcher::fetchList(const QString songTitle)
 void GeniusLyricsFetcher::lyricsFetched(QNetworkReply *reply)
 {
     qDebug() << "Genius lyrics fetched!";
-    QString lyrics;
+    QString lyrics = "";
     QByteArray page = reply->readAll();
+    int containerCount = page.count("<div data-lyrics-container=\"true\"");
+    int temp = 0;
+    for (int i = 0; i < containerCount; ++i) {
+        int start = page.indexOf("<div data-lyrics-container=\"true\"", temp);
+        temp = start + 1;
+        for (int counter = 1; counter > 0;) {
+            int end = page.indexOf("</div>", temp);
+            if (end < 0)
+                return;
+            counter += page.mid(temp, end - temp).count("<div") - 1;
+            temp = end + 1;
+        }
 
-    int start = page.indexOf("<div data-lyrics-container=\"true\"");
-    int temp = start + 1;
-    for (int counter = 1; counter > 0;) {
-        int end = page.indexOf("</div>", temp);
-        if (end < 0)
-            return;
-        counter += page.mid(temp, end - temp).count("<div") - 1;
-        temp = end + 1;
+        lyrics.append(page.mid(start, temp - start - 1));
     }
 
-    lyrics = page.mid(start, temp - start - 1);
     lyrics.replace("<br/>", "\n");
     QRegularExpression regexp("<.+?>",
                               QRegularExpression::DotMatchesEverythingOption);
