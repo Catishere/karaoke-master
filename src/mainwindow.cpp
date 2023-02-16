@@ -166,7 +166,7 @@ bool MainWindow::createSongIndex(const QString &id)
     QString str = QStringLiteral("alias say_song%2 \"%4 Current Song: %1\";"
                                  "alias song%2 \"alias spamycs song%2lyrics0;"
                                  "bind %3 %2; alias lyrics_current say_song%2;"
-                                 "%5 lyrics_trigger;\n")
+                                 "%5 lyrics_trigger;\"\n")
                 .arg(songname, id, relay_key, sayType, compatWriteCfg);
 
     dest.write(str.toUtf8());
