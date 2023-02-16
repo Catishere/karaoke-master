@@ -15,6 +15,11 @@ void GeniusLyricsFetcher::fetchLyrics(QString link)
 
     QNetworkRequest request;
     request.setUrl(QUrl(link));
+
+    request.setRawHeader("User-Agent",
+                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                         "AppleWebKit/537.36 (KHTML, like Gecko) "
+                         "Chrome/110.0.0.0 Safari/537.36");
     manager->disconnect();
     connect(manager, &QNetworkAccessManager::finished,
             this, &GeniusLyricsFetcher::lyricsFetched);
@@ -40,15 +45,16 @@ void GeniusLyricsFetcher::lyricsFetched(QNetworkReply *reply)
     QByteArray page = reply->readAll();
 
     int start = page.indexOf("<div data-lyrics-container=\"true\"");
-    int end = page.indexOf("</div>", start);
-    int temp = page.indexOf("<div data-lyrics-container=\"true\"");
-    while (temp >= 0){
-        end = page.indexOf("</div>", temp);
-        temp = page.indexOf("<div data-lyrics-container=\"true\"", temp + 10);
+    int temp = start + 1;
+    for (int counter = 1; counter > 0;) {
+        int end = page.indexOf("</div>", temp);
+        if (end < 0)
+            return;
+        counter += page.mid(temp, end - temp).count("<div") - 1;
+        temp = end + 1;
     }
 
-
-    lyrics = page.mid(start, end - start);
+    lyrics = page.mid(start, temp - start - 1);
     lyrics.replace("<br/>", "\n");
     QRegularExpression regexp("<.+?>",
                               QRegularExpression::DotMatchesEverythingOption);
