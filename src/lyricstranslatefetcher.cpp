@@ -25,6 +25,7 @@ void LyricstranslateFetcher::fetchLyrics(const QString link)
 void LyricstranslateFetcher::fetchList(const QString songTitle)
 {
     qDebug() << "LT fetching list...";
+
     QNetworkRequest req;
     req.setUrl(QUrl("https://cse.google.com/cse/element/v1?"
                     "&hl=en"
@@ -71,6 +72,7 @@ void LyricstranslateFetcher::lyricsFetched(QNetworkReply *reply)
 void LyricstranslateFetcher::listFetched(QNetworkReply *reply)
 {
     qDebug() << "LT list fetched!";
+
     StringPairList list;
     QByteArray data = reply->readAll();
     qsizetype start = data.indexOf('{');

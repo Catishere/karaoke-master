@@ -20,6 +20,13 @@ void ConfigController::read(const QJsonObject &json)
     commonSettings.insert("updateNotification", json["updateNotification"]);
     if (json.constFind("allowedFetchers") != json.constEnd())
         commonSettings.insert("allowedFetchers", json["allowedFetchers"]);
+    else
+        commonSettings.insert("allowedFetchers",
+                              QJsonObject({
+                                 {"Genius", true},
+                                 {"Lyrics Translate", true},
+                                 {"Musixmatch", true}
+                             }));
 
     for (int configIndex = 0; configIndex < configArray.size(); ++configIndex) {
         QJsonObject configObject = configArray[configIndex].toObject();

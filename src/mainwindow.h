@@ -24,7 +24,6 @@
 #include "geniuslyricsfetcher.h"
 #include "lyricstranslatefetcher.h"
 #include "updatemanager.h"
-#include "statisticsmanager.h"
 #include "optionsdialog.h"
 
 #define VERSION "v1.2.8"
@@ -94,7 +93,6 @@ private:
     Ui::MainWindow *ui;
     ConfigController configController;
     UpdateManager *updateManager;
-    StatisticsManager stats;
     QString sayType;
     QString temp_lyrics_name;
     QString dl_file_name;

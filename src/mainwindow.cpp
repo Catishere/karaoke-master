@@ -59,7 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&configController, &ConfigController::listChanged,
             this, &MainWindow::loadDropListPaths);
-//    stats.sendLaunch();
 
     refreshSongList();
 }
@@ -807,8 +806,16 @@ void MainWindow::updateAllowedFetchers()
 {
     allowed_fetchers.clear();
     auto allowed = configController.getAllowedFetchers();
-    if (allowed.isEmpty())
-        return;
+
+    if (allowed.isEmpty()) {
+        configController.setAllowedFetchers({
+                                                {"Genius", true},
+                                                {"Lyrics Translate", true},
+                                                {"Musixmatch", true}
+                                            });
+        allowed = configController.getAllowedFetchers();
+    }
+
     for (auto& f : all_fetchers) {
         disconnect(dynamic_cast<QObject*>(f), nullptr,
                    nullptr, nullptr);

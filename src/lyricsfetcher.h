@@ -8,7 +8,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-
 #include "stringpairlist.h"
 
 class LyricsFetcher
