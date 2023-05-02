@@ -224,7 +224,8 @@ void MainWindow::checkConfigFile()
 {
     QString ud = configController.getUserDataPath();
     if (configController.getCurrentConfig()->getFullName() == "Half-Life")
-        ud = configController.getCurrentGamePath() + "/lyrics_trigger.cfg";
+        ud = configController.getCurrentConfigTriggerPath()
+             + "/lyrics_trigger.cfg";
 
     if (QFileInfo::exists(ud)) {
         QFile f(ud);
@@ -406,6 +407,7 @@ void MainWindow::songCooked()
             QString filename = ffmpegsux.at(i);
             if (filename.endsWith(".wav")) {
                 dl_file_name.replace(QChar(0x00A0), " ");
+
                 QFile::rename(filename, "songs/" + dl_file_name + ".wav");
                 success = true;
             }
@@ -436,7 +438,8 @@ void MainWindow::downloadSongYoutube(QString &song_name)
     if (song_name.startsWith("https://"))
         search_str = song_name;
     else {
-        song_name.replace(QRegularExpression("[%.\\/: ]"), " ");
+        song_name.replace(QRegularExpression("[%.\\/:]"), " ");
+        song_name.replace("?", "");
         search_str = "\"ytsearch: " + song_name + "\"";
     }
     QString program = "yt-dlp.exe -x --extract-audio --audio-format wav "
@@ -782,6 +785,7 @@ void MainWindow::showUpdateNotification()
             if (configController.isUpdateNotification()) {
                 configController.setUpdateNotification(true);
                 configController.saveConfig();
+
                 QMessageBox::information(this, "Updated",
                                          "The application is successfully"
                                          " updated to version " VERSION
@@ -789,6 +793,7 @@ void MainWindow::showUpdateNotification()
             }
             return;
         }
+
         auto reply = QMessageBox::question(this, "Update available",
                                            "Update for version " + version + " "
                                            "is available (Current " VERSION ")."
@@ -891,6 +896,7 @@ void MainWindow::lyricsFetched(const QString& lyrics)
 
     temp_lyrics_name.replace(QChar(0xA0), " ");
     temp_lyrics_name.replace(QRegularExpression("[%.\\/:]"), " ");
+    temp_lyrics_name.replace("?", "");
 
     lyrics_file.setFileName("lyrics/" + temp_lyrics_name + ".txt");
 

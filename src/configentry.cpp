@@ -48,20 +48,15 @@ ConfigEntry::ConfigEntry(QString path)
     while (pathTokens.size() != gamesFolder + 2)
         pathTokens.removeLast();
 
-    QString gamePath = pathTokens.join('/');
+    QMap<QString, QString> gameIds = {
+        { "cstrike",    "10" },
+        { "hl2",        "220" },
+        { "csgo",       "730" },
+        { "garrysmod",  "4000" },
+        { "css",        "240" },
+    };
 
-    QFile file(gamePath + "/steam_appid.txt");
-
-    QString game_appid;
-    if (file.open(QIODevice::ReadOnly))
-    {
-        game_appid = file.readLine();
-        file.close();
-    }
-    else
-        game_appid = "";
-
-    this->code = game_appid.trimmed();
+    this->code = gameIds.find(name).value().trimmed();
     this->path = path;
     this->status = false;
     this->alwaysDownload = false;

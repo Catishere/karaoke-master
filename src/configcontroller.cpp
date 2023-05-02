@@ -58,6 +58,16 @@ bool ConfigController::saveConfig()
 
     saveFile.open(QIODevice::WriteOnly);
 
+    // HACK
+
+    for (ConfigEntry& entry : configEntries) {
+        if (currentConfig.getName() == entry.getName()) {
+            entry = currentConfig;
+        }
+    }
+
+    // END HACK
+
     QJsonObject gameObject;
     write(gameObject);
     QJsonDocument saveDoc(gameObject);
@@ -136,6 +146,11 @@ QString ConfigController::getUserDataPath() const
 QString ConfigController::getCurrentGamePath() const
 {
     return commonSettings["currentGamePath"].toString();
+}
+
+QString ConfigController::getCurrentConfigTriggerPath() const
+{
+    return currentConfig.getPath();
 }
 
 ConfigEntry* ConfigController::getCurrentConfig()

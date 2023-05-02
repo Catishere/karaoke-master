@@ -30,6 +30,7 @@ public:
     ConfigEntry* getCurrentConfig();
     QString getUserDataPath() const;
     QString getCurrentGamePath() const;
+    QString getCurrentConfigTriggerPath() const;
     QList<ConfigEntry> getConfigEntries() const;
     QList<ConfigEntry> &getConfigEntriesRef();
     void setAccountId(const QString &accountId);

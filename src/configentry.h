@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QStringList>
+#include <QMap>
 #include <QFile>
 #include <QDebug>
 

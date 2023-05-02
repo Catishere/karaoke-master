@@ -27,6 +27,7 @@ void UpdateManager::getUpdateInfo()
         emit finished(reply->readAll());
         this->disconnect(conn);
     });
+
     manager->get(req);
 }
 
