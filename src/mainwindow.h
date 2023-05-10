@@ -26,7 +26,7 @@
 #include "updatemanager.h"
 #include "optionsdialog.h"
 
-#define VERSION "v1.2.8"
+#define VERSION "v1.2.9"
 #define STEAMAPPS "/Steam/steamapps/common"
 
 namespace Ui {
